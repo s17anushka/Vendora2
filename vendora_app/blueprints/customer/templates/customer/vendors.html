@@ -62,11 +62,12 @@
                         <strong>Established:</strong> {{ v.year_of_establishment or "Not Provided" }}
                     </p>
 
-                    <!-- Fake Button -->
-                    <a href="#"
+                    <!--Button -->
+                    <a href="{{ url_for('customer.vendor_details', vendor_id=v.id) }}"
                         class="block text-center bg-blue-700 text-white px-4 py-2 rounded-xl hover:bg-blue-800 transition">
                         View Details
                     </a>
+
 
                 </div>
             </div>

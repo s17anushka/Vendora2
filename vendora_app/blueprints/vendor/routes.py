@@ -55,6 +55,45 @@ def profile_setup():
     flash('Vendor Profile completed successfully!', 'Success')
     return redirect(url_for('vendor.dashboard'))
 
+@vendor.route('/profile_update', methods=['GET', 'POST'])
+@login_required
+def profile_update():
+    vendor_profile = current_user.vendor_profile
+
+    if not vendor_profile:
+        flash("You don't have a vendor profile yet. Complete setup first.", "warning")
+        return redirect(url_for('vendor.profile_setup'))
+
+    # ==========================
+    # GET → show update form
+    # ==========================
+    if request.method == 'GET':
+        return render_template(
+            'vendor/profile_update.html',
+            profile=vendor_profile
+        )
+
+    # ==========================
+    # POST → update values
+    # ==========================
+    vendor_profile.name = request.form.get('name', vendor_profile.name)
+    vendor_profile.email = request.form.get('email', vendor_profile.email)
+    vendor_profile.business_name = request.form.get('business_name', vendor_profile.business_name)
+    vendor_profile.business_address = request.form.get('business_address', vendor_profile.business_address)
+    vendor_profile.phone_number = request.form.get('phone_number', vendor_profile.phone_number)
+    vendor_profile.whatsapp_number = request.form.get('whatsapp_number', vendor_profile.whatsapp_number)
+    vendor_profile.open_duration = request.form.get('open_duration', vendor_profile.open_duration)
+    vendor_profile.payment_type = request.form.get('payment_type', vendor_profile.payment_type)
+    vendor_profile.year_of_establishment = request.form.get('year_of_establishment', vendor_profile.year_of_establishment)
+
+    db.session.commit()
+
+    flash('Vendor Profile updated successfully!', 'success')
+    return redirect(url_for('vendor.dashboard'))
+
+
+
+
 
 @vendor.route('/dashboard')
 @login_required

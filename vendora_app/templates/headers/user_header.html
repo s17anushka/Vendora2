@@ -24,12 +24,21 @@
                 class="bg-gray-100 text-gray-800 font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-gray-200 transition duration-200">
                 Logout
             </a>
+            {% if current_user.last_role == 'customer' %}
             <a href="{{ url_for('customer.dashboard') }}">
                 <span
                     class="bg-primary/10 text-primary font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-primary/20 transition duration-200">
                     {{ current_user.username }}
                 </span>
             </a>
+            {% else %}
+            <a href="{{ url_for('vendor.dashboard') }}">
+                <span
+                    class="bg-primary/10 text-primary font-medium py-2 px-4 rounded-lg shadow-sm hover:bg-primary/20 transition duration-200">
+                    {{ current_user.username }}
+                </span>
+            </a>
+            {% endif %}
         </div>
     </nav>
 

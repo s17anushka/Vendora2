@@ -46,3 +46,7 @@ def dashboard():
         return "Access denied", 403
     return render_template('customer/dashboard.html')
     
+@customer.route('/vendor/<int:vendor_id>')
+def vendor_details(vendor_id):
+    v = Vendor.query.get_or_404(vendor_id)
+    return render_template("customer/vendor_detail.html", vendor=v)

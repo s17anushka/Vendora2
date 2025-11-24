@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Update Profile{% endblock %}
+
+{% block content %}
+
+<div class="bg-gray-100 min-h-screen py-10">
+    <div class="container mx-auto max-w-3xl px-4">
+
+        <!-- Header -->
+        <h1 class="text-3xl font-semibold text-gray-800 mb-8 text-center">
+            Update Vendor Profile
+        </h1>
+
+        <!-- Card -->
+        <div class="bg-white shadow-lg rounded-xl p-8">
+
+            <form action="{{ url_for('vendor.profile_update') }}" method="POST" class="space-y-6">
+
+                <!-- Name -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">Full Name</label>
+                    <input type="text" name="name" value="{{ profile.name }}"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200">
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">Email</label>
+                    <input type="email" name="email" value="{{ profile.email }}"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200">
+                </div>
+
+                <!-- Business Name -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">Business Name</label>
+                    <input type="text" name="business_name" value="{{ profile.business_name }}"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200">
+                </div>
+
+                <!-- Business Address -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">Business Address</label>
+                    <textarea name="business_address"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200"
+                        rows="3">{{ profile.business_address }}</textarea>
+                </div>
+
+                <!-- Phone Number -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">Phone Number</label>
+                    <input type="text" name="phone_number" value="{{ profile.phone_number }}"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200">
+                </div>
+
+                <!-- Whatsapp Number -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">WhatsApp Number</label>
+                    <input type="text" name="whatsapp_number" value="{{ profile.whatsapp_number }}"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200">
+                </div>
+
+                <!-- Open Duration -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">Business Timings</label>
+                    <input type="text" name="open_duration" value="{{ profile.open_duration }}"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200">
+                </div>
+
+                <!-- Payment Type -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">Payment Type</label>
+                    <input type="text" name="payment_type" value="{{ profile.payment_type }}"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200">
+                </div>
+
+                <!-- Year of Establishment -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">Year of Establishment</label>
+                    <input type="number" name="year_of_establishment" value="{{ profile.year_of_establishment }}"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-200">
+                </div>
+
+                <!-- Button -->
+                <div class="pt-4">
+                    <button type="submit"
+                        class="w-full bg-indigo-600 text-white py-2 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition">
+                        Update Profile
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
