@@ -7,3 +7,4 @@ jsonify
 flask-login
 flask-bcrypt
 cryptography
+cloudinary
