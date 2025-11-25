@@ -170,4 +170,4 @@ def show_notes():
 @auth.route("/upload-profile-image", methods=["GET","POST"])
 def upload_profile_image():
     if request.method == "GET":
-        return render_template("")
+        return render_template("profile_update.html")
