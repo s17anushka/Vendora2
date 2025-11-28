@@ -3,57 +3,57 @@
 {% block title %}Vendor Details{% endblock %}
 
 {% block content %}
-<div class="container mx-auto max-w-3xl py-10 px-4">
+<div class="container mx-auto max-w-3xl py-6 px-4 sm:py-10 sm:px-6">
 
     <div class="bg-white shadow-lg rounded-2xl overflow-hidden">
 
         <!-- Business Image -->
         <div class="relative">
-            <img src="{{ vendor.user.business_imgs[0] }}" alt="Business Image" class="w-full h-60 object-cover">
+            <img src="{{ vendor.user.business_imgs[0] }}" alt="Business Image" class="w-full h-48 sm:h-60 object-cover">
 
             <!-- Gradient overlay -->
             <div class="absolute inset-0 bg-gradient-to-b from-black/20 to-black/50"></div>
 
             <!-- Floating Profile -->
-            <div class="absolute bottom-4 left-4 flex items-center space-x-3">
+            <div class="absolute bottom-3 left-3 flex items-center space-x-2 sm:space-x-3">
                 {% if vendor.user.profile_img %}
                 <img src="{{ vendor.user.profile_img }}"
-                    class="w-12 h-12 rounded-full border-2 border-white shadow-md object-cover" />
+                    class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white shadow-md object-cover" />
                 {% else %}
                 <div
-                    class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center justify-center shadow-md">
+                    class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center justify-center shadow-md text-sm sm:text-base">
                     {{ vendor.user.username[0]|upper }}
                 </div>
                 {% endif %}
-                <div class="text-white">
-                    <h2 class="text-lg font-semibold">{{ vendor.business_name }}</h2>
-                    <p class="text-sm">{{ vendor.name }}</p>
+                <div class="text-white truncate max-w-[70%] sm:max-w-xs">
+                    <h2 class="text-base sm:text-lg font-semibold truncate">{{ vendor.business_name }}</h2>
+                    <p class="text-xs sm:text-sm truncate">{{ vendor.name }}</p>
                 </div>
             </div>
         </div>
 
         <!-- Details -->
-        <div class="p-6 space-y-4">
+        <div class="p-4 sm:p-6 space-y-4">
 
             <!-- Rating -->
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 text-sm sm:text-base flex-wrap">
                 {% if vendor.rating %}
                 <span
-                    class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+                    class="bg-yellow-100 text-yellow-700 px-2 sm:px-3 py-1 rounded-full font-medium flex items-center gap-1 text-xs sm:text-sm">
                     ⭐ {{ vendor.rating }}/5
                 </span>
-                <span class="text-gray-500 text-sm">{{ vendor.rater_no }} reviews</span>
+                <span class="text-gray-500 text-xs sm:text-sm">{{ vendor.rater_no }} reviews</span>
                 {% else %}
-                <span class="text-gray-500 text-sm">No ratings yet</span>
+                <span class="text-gray-500 text-xs sm:text-sm">No ratings yet</span>
                 {% endif %}
             </div>
 
             <!-- Contact Info -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-gray-700 text-sm sm:text-base">
                 <p class="flex items-center gap-2">📞 <strong>Phone:</strong> {{ vendor.phone_number }}</p>
                 <p class="flex items-center gap-2">💬 <strong>WhatsApp:</strong> {{ vendor.whatsapp_number }}</p>
-                <p class="flex items-center gap-2 col-span-2">📍 <strong>Address:</strong> {{ vendor.business_address }}
-                </p>
+                <p class="flex items-center gap-2 col-span-1 sm:col-span-2">📍 <strong>Address:</strong> {{
+                    vendor.business_address }}</p>
                 <p class="flex items-center gap-2">⏰ <strong>Timings:</strong> {{ vendor.open_duration }}</p>
                 <p class="flex items-center gap-2">💳 <strong>Payment Type:</strong> {{ vendor.payment_type }}</p>
                 <p class="flex items-center gap-2">🏛️ <strong>Established:</strong> {{ vendor.year_of_establishment }}
@@ -62,7 +62,7 @@
 
             <!-- Back Button -->
             <a href="{{ url_for('customer.vendors') }}"
-                class="inline-block mt-4 bg-blue-700 text-white px-4 py-2 rounded-xl hover:bg-blue-800 transition">
+                class="inline-block mt-4 w-full sm:w-auto text-center bg-blue-700 text-white px-4 py-2 rounded-xl hover:bg-blue-800 transition text-sm sm:text-base">
                 ← Back to Vendors
             </a>
         </div>
