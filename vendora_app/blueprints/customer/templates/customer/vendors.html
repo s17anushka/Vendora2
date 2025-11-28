@@ -3,79 +3,103 @@
 {% block title %}Vendors | Vendora{% endblock %}
 
 {% block content %}
-<div class="bg-gray-100 min-h-screen py-10">
-    <div class="container mx-auto max-w-6xl px-4">
-        <h1 class="text-3xl font-semibold text-gray-800 mb-8 text-center">
-            Explore Verified Vendors
-        </h1>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
 
-        <!-- Search Bar -->
-        <div class="mb-8 max-w-md mx-auto">
-            <input type="text" placeholder="Search vendors..."
-                class="w-full p-3 rounded-xl shadow-sm border border-gray-300 focus:ring-2 focus:ring-blue-700 focus:outline-none" />
-        </div>
+    {% if vendors %}
+    {% for v in vendors %}
+    <div
+        class="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100 relative">
 
-        <!-- Vendor Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Business Cover Image -->
+        <div class="relative">
+            <img src="{{ v.user.business_imgs[0] }}"
+                class="h-48 w-full object-cover rounded-t-3xl transition duration-300 group-hover:brightness-95">
 
-            {% if vendors %}
-            {% for v in vendors %}
-            <div class="bg-white rounded-2xl shadow hover:shadow-lg transition duration-300 overflow-hidden">
+            <!-- Gradient Overlay -->
+            <div class="absolute inset-0 bg-gradient-to-b from-black/20 to-black/60 rounded-t-3xl"></div>
 
-                <!-- IMAGE (placeholder for now) -->
-                <img src="{{v.user.business_imgs[0]}}" alt="Vendor Image"
-                    class="h-40 w-full object-cover bg-gray-200" />
+            <!-- SMALL Floating Profile -->
+            <div class="absolute bottom-3 left-3 flex items-center space-x-2">
 
-                <!-- Header -->
-                <div class="bg-blue-700 text-white p-5">
-                    <h2 class="text-lg font-semibold">
-                        {{ v.business_name or "Not Provided" }}
-                    </h2>
-                    <p class="text-sm opacity-80">
-                        Owner: {{ v.name or "Not Provided" }}
-                    </p>
+                {% if v.user.profile_img %}
+                <img src="{{ v.user.profile_img }}"
+                    class="w-10 h-10 rounded-full border border-white shadow-md object-cover" />
+                {% else %}
+                <div
+                    class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold flex items-center justify-center shadow-md">
+                    {{ v.user.username[0]|upper }}
                 </div>
+                {% endif %}
 
-                <div class="p-5">
-
-                    <p class="text-gray-600 text-sm mb-3">
-                        <strong>Phone:</strong> {{ v.phone_number or "Not Provided" }}
+                <!-- Business name trimmed & cleaner -->
+                <div class="leading-tight">
+                    <h2 class="text-white font-semibold text-base drop-shadow-md line-clamp-1">
+                        {{ v.business_name or "Vendor" }}
+                    </h2>
+                    <p class="text-gray-200 text-xs leading-none">
+                        {{ v.name or "Owner" }}
                     </p>
-
-                    <p class="text-gray-600 text-sm mb-3">
-                        <strong>Whatsapp:</strong> {{ v.whatsapp_number or "Not Provided" }}
-                    </p>
-
-                    <p class="text-gray-600 text-sm mb-3">
-                        <strong>Address:</strong> {{ v.business_address or "Not Provided" }}
-                    </p>
-
-                    <p class="text-gray-600 text-sm mb-3">
-                        <strong>Open Duration:</strong> {{ v.open_duration or "Not Provided" }}
-                    </p>
-
-                    <p class="text-gray-600 text-sm mb-3">
-                        <strong>Payment Type:</strong> {{ v.payment_type or "Not Provided" }}
-                    </p>
-
-                    <p class="text-gray-600 text-sm mb-4">
-                        <strong>Established:</strong> {{ v.year_of_establishment or "Not Provided" }}
-                    </p>
-
-                    <!--Button -->
-                    <a href="{{ url_for('customer.vendor_details', vendor_id=v.id) }}"
-                        class="block text-center bg-blue-700 text-white px-4 py-2 rounded-xl hover:bg-blue-800 transition">
-                        View Details
-                    </a>
-
-
                 </div>
             </div>
-            {% endfor %}
-            {% else %}
-            <p class="text-center text-gray-600">No vendors found.</p>
-            {% endif %}
+        </div>
+
+        <!-- Card Content -->
+        <div class="p-6">
+
+            <!-- Rating -->
+            <div class="flex items-center mb-4">
+                {% if v.rating %}
+                <span
+                    class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                    ⭐ {{ v.rating }}/5
+                </span>
+                <span class="ml-2 text-gray-500 text-xs">
+                    {{ v.rater_no }} reviews
+                </span>
+                {% else %}
+                <span class="text-gray-500 text-xs">No ratings yet</span>
+                {% endif %}
+            </div>
+
+            <!-- Address -->
+            <div class="flex items-start gap-2 pb-3 mb-4 border-b border-gray-200">
+                <span class="text-blue-700 text-lg">📍</span>
+                <p class="text-gray-700 text-sm leading-snug line-clamp-2">
+                    {{ v.business_address or "Address not provided" }}
+                </p>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="space-y-3">
+
+                <div class="flex items-center gap-3">
+                    <span class="text-blue-700">📞</span>
+                    <span class="text-gray-700 text-sm">
+                        {{ v.phone_number or "Not Provided" }}
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <span class="text-green-600">💬</span>
+                    <span class="text-gray-700 text-sm">
+                        {{ v.whatsapp_number or "Not Provided" }}
+                    </span>
+                </div>
+
+            </div>
+
+            <!-- Button -->
+            <a href="{{ url_for('customer.vendor_details', vendor_id=v.id) }}"
+                class="mt-6 block text-center bg-gradient-to-r from-blue-700 to-blue-900 text-white font-semibold py-2.5 rounded-xl shadow-md hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
+                View Details →
+            </a>
+
         </div>
     </div>
+    {% endfor %}
+    {% else %}
+    <p class="text-center text-gray-600">No vendors found.</p>
+    {% endif %}
 </div>
+
 {% endblock %}
