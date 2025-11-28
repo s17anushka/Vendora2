@@ -4,53 +4,56 @@
 
 {% block content %}
 
-<div class="min-h-screen bg-gray-100 py-12">
+<div class="min-h-screen bg-gray-100 py-8 sm:py-12">
 
-    <div class="max-w-3xl mx-auto">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6">
 
         <!-- Page Heading -->
-        <h1 class="text-4xl font-bold text-gray-800 mb-8 text-center">User Settings</h1>
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-8 text-center">User Settings</h1>
 
         <!-- =============================== -->
         <!-- Profile Information Section     -->
         <!-- =============================== -->
-        <div class="bg-white shadow-md rounded-xl p-8 mb-10">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Profile Information</h2>
+        <div class="bg-white shadow-md rounded-xl p-6 sm:p-8 mb-8">
+            <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">Profile Information</h2>
 
             <form action="{{ url_for('auth.profile_update') }}" method="POST" enctype="multipart/form-data"
-                class="space-y-6">
+                class="space-y-5 sm:space-y-6">
 
                 <!-- Name -->
                 <div>
                     <label class="block text-gray-700 font-medium mb-1">Full Name</label>
-                    <input type="text" name="name" value="{{ current_user.name }}" required class="w-full px-4 py-2 rounded-lg border border-gray-300 
-                        focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm">
+                    <input type="text" name="name" value="{{ current_user.name }}" required class="w-full px-3 sm:px-4 py-2 rounded-lg border border-gray-300 
+                        focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm text-sm sm:text-base">
                 </div>
 
                 <!-- Profile Picture Upload -->
                 <div>
                     <label class="block text-gray-700 font-medium mb-2">Profile Picture</label>
 
-                    <div class="flex items-center gap-6">
+                    <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
 
                         <!-- Current Image -->
                         {% if current_user.profile_img %}
-                        <img src="{{ current_user.profile_img }}" class="w-20 h-20 rounded-full object-cover shadow-md">
+                        <img src="{{ current_user.profile_img }}"
+                            class="w-24 h-24 sm:w-20 sm:h-20 rounded-full object-cover shadow-md">
                         {% else %}
-                        <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
+                        <div
+                            class="w-24 h-24 sm:w-20 sm:h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-sm sm:text-base">
                             No Image
                         </div>
                         {% endif %}
 
                         <!-- Upload -->
-                        <input type="file" name="image" accept="image/*" class="text-gray-700 bg-gray-50 border border-gray-300 rounded-lg px-4 py-2
+                        <input type="file" name="image" accept="image/*" class="text-gray-700 bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 sm:px-4 sm:py-2
                             file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-white
-                            file:bg-blue-600 hover:file:bg-blue-700 cursor-pointer">
+                            file:bg-blue-600 hover:file:bg-blue-700 cursor-pointer w-full sm:w-auto">
                     </div>
                 </div>
 
-                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-medium
-                    hover:bg-blue-700 transition-all shadow">
+                <!-- Save Button -->
+                <button type="submit"
+                    class="w-full bg-blue-600 text-white py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-all shadow">
                     Save Changes
                 </button>
             </form>
@@ -59,12 +62,13 @@
         <!-- =============================== -->
         <!-- Uploaded Image Preview          -->
         <!-- =============================== -->
-        <div class="bg-white shadow-md rounded-xl p-8 mb-10">
-            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Preview</h2>
+        <div class="bg-white shadow-md rounded-xl p-6 sm:p-8 mb-8">
+            <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">Preview</h2>
 
             {% if current_user.profile_img %}
             <div class="flex justify-center">
-                <img src="{{ current_user.profile_img }}" class="w-40 h-40 rounded-full shadow-lg object-cover">
+                <img src="{{ current_user.profile_img }}"
+                    class="w-32 sm:w-40 h-32 sm:h-40 rounded-full shadow-lg object-cover">
             </div>
             {% else %}
             <p class="text-center text-gray-500">No image uploaded yet.</p>
@@ -74,13 +78,14 @@
         <!-- =============================== -->
         <!-- Danger Zone                     -->
         <!-- =============================== -->
-        <div class="bg-white shadow-inner rounded-xl p-8 border border-red-300">
-            <h2 class="text-2xl font-semibold text-red-600 mb-4 text-center">Danger Zone</h2>
-            <p class="text-gray-700 text-center mb-6">Deleting your account is permanent and cannot be undone.</p>
+        <div class="bg-white shadow-inner rounded-xl p-6 sm:p-8 border border-red-300">
+            <h2 class="text-xl sm:text-2xl font-semibold text-red-600 mb-4 text-center">Danger Zone</h2>
+            <p class="text-gray-700 text-center mb-6 text-sm sm:text-base">Deleting your account is permanent and cannot
+                be undone.</p>
 
             <form action="{{ url_for('auth.delete_account') }}" method="POST">
-                <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-lg text-lg font-medium
-                    hover:bg-red-700 transition-all shadow-md">
+                <button type="submit"
+                    class="w-full bg-red-600 text-white py-3 rounded-lg text-lg font-medium hover:bg-red-700 transition-all shadow-md">
                     Delete Account
                 </button>
             </form>
@@ -90,5 +95,4 @@
 
 {% endblock %}
 
-{% block scripts %}
-{% endblock %}
+{% block scripts %}{% endblock %}
