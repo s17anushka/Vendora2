@@ -167,7 +167,7 @@ def edit_business():
 
 @vendor.route('/appointments')
 def appointments():
-    return render_template('vendor/dashboard.html')
+    return render_template('vendor/appointments.html')
 
 @vendor.route('/analytics')
 def analytics():

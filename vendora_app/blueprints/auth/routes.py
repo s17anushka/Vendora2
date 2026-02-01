@@ -94,7 +94,6 @@ def login():
         password = request.form.get('password')
         role = request.form.get('role')
         
-
         # Authentication check
         user = User.query.filter(User.username == username).first()
         if not user or not bcrypt.check_password_hash(user.password, password):
@@ -164,8 +163,8 @@ def show_notes():
             <a href="/logout">logout</a>
             <p>Note added successfully!</p>
             {notes_html}
-            <a href="/new_note">Add another note</a> <br>
-                                   
+            <a href="/new_note">Add another note</a> <br> 
+                                              
         """
 @login_required        
 @auth.route("/profile_update", methods=["GET","POST"])
