@@ -60,6 +60,51 @@
                 </p>
             </div>
 
+
+            <!-- Services Section -->
+            <div class="mt-6">
+                <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3">
+                    Services Offered
+                </h3>
+
+                {% if services %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                    {% for service in services %}
+                    <div class="border rounded-xl p-4 shadow-sm bg-gray-50">
+
+                        <h4 class="font-semibold text-gray-800">
+                            {{ service.service_name }}
+                        </h4>
+
+                        <p class="text-sm text-gray-500">
+                            {{ service.service_type }}
+                        </p>
+
+                        <div class="flex justify-between items-center mt-2 text-sm">
+                            <span>⏱ {{ service.duration_minutes or "N/A" }} mins</span>
+                            <span class="text-green-600 font-medium">
+                                ₹{{ service.service_cost or "N/A" }}
+                            </span>
+                        </div>
+
+                        <!-- Book Button -->
+                        <a href="{{ url_for('appointment.book_service', service_id=service.id) }}"
+                            class="block mt-3 text-center bg-blue-600 text-white py-1.5 rounded-lg hover:bg-blue-700 transition text-sm">
+                            Book Service
+                        </a>
+
+                    </div>
+                    {% endfor %}
+
+                </div>
+
+                {% else %}
+                <p class="text-gray-500 text-sm">No services available.</p>
+                {% endif %}
+            </div>
+
+
             <!-- Back Button -->
             <a href="{{ url_for('customer.vendors') }}"
                 class="inline-block mt-4 w-full sm:w-auto text-center bg-blue-700 text-white px-4 py-2 rounded-xl hover:bg-blue-800 transition text-sm sm:text-base">

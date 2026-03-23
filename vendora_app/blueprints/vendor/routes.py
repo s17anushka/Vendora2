@@ -1,5 +1,6 @@
 from flask import request, render_template, redirect, url_for, Blueprint, flash
-from vendora_app.blueprints.vendor.models import Vendor
+from vendora_app.blueprints.vendor.models import Vendor, Service
+from vendora_app.blueprints.appointment.models import Appointment
 from flask_login import login_user, logout_user, current_user, login_required
 from vendora_app.app import db
 from cloudinary.uploader import upload
@@ -124,6 +125,85 @@ def profile_update():
     flash('Vendor Profile updated successfully!', 'success')
     return redirect(url_for('vendor.dashboard'))
 
+
+@vendor.route('/services', methods=['GET', 'POST'])
+def services():   
+      
+    if request.method == 'POST':
+        # Get form data
+        service_name = request.form.get('service_name')
+        service_type = request.form.get('service_type')
+        duration_minutes = request.form.get('duration_minutes')
+        service_cost = request.form.get('service_cost')
+        vendor_id = current_user.vendor_profile.id
+
+        # Convert numeric fields safely
+        duration_minutes = int(duration_minutes) if duration_minutes else None
+        service_cost = int(service_cost) if service_cost else None
+        
+        if not vendor_id:
+            return "Vendor not logged in", 400
+
+        # Create new Service object
+        new_service = Service(
+            vendor_id=vendor_id,
+            service_name=service_name,
+            service_type=service_type,
+            duration_minutes=duration_minutes,
+            service_cost=service_cost
+        )
+
+        # Save to database
+        db.session.add(new_service)
+        db.session.commit()
+
+        # Optional: redirect after success (important to prevent resubmission)
+        return redirect(url_for('vendor.services'))
+
+    # GET request
+    services_data = Service.query.filter_by(vendor_id=current_user.vendor_profile.id).all()
+    return render_template('vendor/services.html',vendor=vendor, services = services_data )
+ 
+@vendor.route('/add-service', methods=['POST'])
+def add_service():
+    vendor_id = current_user.vendor_profile.id
+
+    new_service = Service(
+        vendor_id=vendor_id,
+        service_name=request.form.get('service_name'),
+        service_type=request.form.get('service_type'),
+        duration_minutes=int(request.form.get('duration_minutes')) if request.form.get('duration_minutes') else None,
+        service_cost=int(request.form.get('service_cost')) if request.form.get('service_cost') else None
+    )
+
+    db.session.add(new_service)
+    db.session.commit()
+
+    return redirect(url_for('vendor.services'))
+ 
+@vendor.route('/edit-service/<int:id>', methods=['POST'])
+def edit_service(id):
+    service = Service.query.get_or_404(id)
+
+    service.service_name = request.form.get('service_name')
+    service.service_type = request.form.get('service_type')
+    service.duration_minutes = int(request.form.get('duration_minutes')) if request.form.get('duration_minutes') else None
+    service.service_cost = int(request.form.get('service_cost')) if request.form.get('service_cost') else None
+
+    db.session.commit()
+
+    return redirect(url_for('vendor.services'))
+ 
+@vendor.route('/delete-service/<int:id>', methods=['POST'])
+def delete_service(id):
+    service = Service.query.get_or_404(id)
+
+    db.session.delete(service)
+    db.session.commit()
+
+    return redirect(url_for('vendor.services'))  
+    
+
 @vendor.route('/dashboard')
 @login_required
 def dashboard():
@@ -142,7 +222,6 @@ def dashboard():
     <p>Business type: {{ vendor.business_type }}</p>
     """
 
-
 @vendor.route('/delete_profile')
 @login_required
 def delete_vendor_profile():
@@ -159,15 +238,48 @@ def delete_vendor_profile():
 def dashboard():
     return render_template('vendor/dashboard.html')
 """
-    
-
+  
 @vendor.route('/edit_business')
 def edit_business():
     return render_template('vendor/dashboard.html')
 
 @vendor.route('/appointments')
+@login_required
+
 def appointments():
-    return render_template('vendor/appointments.html')
+    if current_user.is_vendor != True:
+        return "Access denied", 403
+        flash('login as Customer','danger')
+    vendor_id = current_user.vendor_profile.id
+
+    appointments = Appointment.query.filter_by(
+        vendor_id=vendor_id
+    ).order_by(Appointment.start_time).all()
+
+    return render_template(
+        'vendor/appointments.html',
+        appointments=appointments
+    )
+    
+@vendor.route('/confirm-appointment/<int:id>', methods=['POST'])
+@login_required
+def confirm_appointment(id):
+    appt = Appointment.query.get_or_404(id)
+
+    appt.status = 'confirmed'
+    db.session.commit()
+
+    return redirect(url_for('vendor.appointments'))
+
+@vendor.route('/cancel-appointment/<int:id>', methods=['POST'])
+@login_required
+def cancel_appointment(id):
+    appt = Appointment.query.get_or_404(id)
+
+    appt.status = 'cancelled'
+    db.session.commit()
+
+    return redirect(url_for('vendor.appointments'))
 
 @vendor.route('/analytics')
 def analytics():
@@ -180,3 +292,4 @@ def reviews():
 @vendor.route('/support')
 def support():
     return render_template('vendor/support.html')
+

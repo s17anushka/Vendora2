@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="bg-gray-100 min-h-screen py-10 px-4">
+    <div class="container mx-auto max-w-5xl">
+
+        <h1 class="text-2xl font-semibold mb-6">Your Services</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- Existing Services -->
+            {% for service in services %}
+            <div class="bg-white p-5 rounded-2xl shadow border">
+
+                <h2 class="text-lg font-semibold">
+                    {{ service.service_name }}
+                </h2>
+
+                <p class="text-sm text-gray-500">
+                    {{ service.service_type }}
+                </p>
+
+                <p class="text-sm mt-2">
+                    ⏱ {{ service.duration_minutes or "N/A" }} mins
+                </p>
+
+                <p class="text-green-600 font-medium">
+                    ₹{{ service.service_cost or "N/A" }}
+                </p>
+
+                <!-- Actions -->
+                <div class="flex gap-3 mt-4">
+
+                    <!-- Edit -->
+                    <button
+                        onclick="openEditModal({{ service.id }}, '{{ service.service_name }}', '{{ service.service_type }}', {{ service.duration_minutes or 0 }}, {{ service.service_cost or 0 }})"
+                        class="text-blue-600 text-sm">
+                        Edit
+                    </button>
+
+                    <!-- Delete -->
+                    <form method="POST" action="{{ url_for('vendor.delete_service', id=service.id) }}">
+                        <button type="submit" class="text-red-600 text-sm">
+                            Delete
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Add Service Card -->
+            <div onclick="openAddModal()"
+                class="flex items-center justify-center bg-white border-2 border-dashed rounded-2xl cursor-pointer hover:bg-gray-50 h-40">
+                <span class="text-gray-500 text-lg">+ Add Service</span>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div id="serviceModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+
+    <div class="bg-white p-6 rounded-xl w-full max-w-md">
+
+        <h2 id="modalTitle" class="text-lg font-semibold mb-4"></h2>
+
+        <form id="serviceForm" method="POST">
+
+            <input type="text" name="service_name" id="service_name" placeholder="Service Name"
+                class="w-full mb-3 border p-2 rounded" required>
+
+            <input type="text" name="service_type" id="service_type" placeholder="Service Type"
+                class="w-full mb-3 border p-2 rounded" required>
+
+            <input type="number" name="duration_minutes" id="duration" placeholder="Duration (minutes)"
+                class="w-full mb-3 border p-2 rounded">
+
+            <input type="number" name="service_cost" id="cost" placeholder="Cost (₹)"
+                class="w-full mb-3 border p-2 rounded">
+
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
+                    Save
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+<script>
+    function openAddModal() {
+        document.getElementById("modalTitle").innerText = "Add Service";
+        document.getElementById("serviceForm").action = "{{ url_for('vendor.add_service') }}";
+
+        document.getElementById("service_name").value = "";
+        document.getElementById("service_type").value = "";
+        document.getElementById("duration").value = "";
+        document.getElementById("cost").value = "";
+
+        document.getElementById("serviceModal").classList.remove("hidden");
+    }
+
+    function openEditModal(id, name, type, duration, cost) {
+        document.getElementById("modalTitle").innerText = "Edit Service";
+        document.getElementById("serviceForm").action = "/vendor/edit-service/" + id;
+
+        document.getElementById("service_name").value = name;
+        document.getElementById("service_type").value = type;
+        document.getElementById("duration").value = duration;
+        document.getElementById("cost").value = cost;
+
+        document.getElementById("serviceModal").classList.remove("hidden");
+    }
+
+    function closeModal() {
+        document.getElementById("serviceModal").classList.add("hidden");
+    }
+</script>
+
+{% endblock %}

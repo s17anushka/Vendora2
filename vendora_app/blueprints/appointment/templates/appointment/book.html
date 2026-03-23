@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="max-w-xl mx-auto mt-10 bg-white p-6 rounded-xl shadow">
+
+    <h2 class="text-xl font-semibold mb-4">
+        Book {{ service.service_name }}
+    </h2>
+
+    <p class="text-gray-500 mb-2">
+        Duration: {{ service.duration_minutes }} mins
+    </p>
+
+    <p class="text-green-600 mb-4">
+        ₹{{ service.service_cost }}
+    </p>
+
+    <form method="POST">
+
+        <!-- Date -->
+        <label>Select Date</label>
+        <input type="date" name="date" required class="w-full border p-2 rounded mb-4">
+
+        <!-- Time Slots -->
+        <label>Select Time</label>
+        <select name="time" class="w-full border p-2 rounded mb-4">
+            {% for slot in slots %}
+            <option value="{{ slot.strftime('%H:%M') }}">
+                {{ slot.strftime('%I:%M %p') }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded">
+            Confirm Booking
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

@@ -6,7 +6,7 @@ class  User(db.Model, UserMixin):
       __tablename__   = 'users'
       uid = db.Column(db.Integer, primary_key = True)
       username = db.Column(db.String(100), nullable=False,unique=True)
-      password = db.Column(db.String(80), nullable=False)
+      password = db.Column(db.String(200), nullable=False)
       
       is_customer = db.Column(db.Boolean, default=False)
       is_vendor = db.Column(db.Boolean, default=False)   

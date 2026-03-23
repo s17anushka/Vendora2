@@ -3,238 +3,122 @@
 {% block title %}Appointments{% endblock %}
 
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<div class="container mx-auto max-w-5xl px-4 py-6">
 
-    <!-- Inter Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        inter: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        primary: '#1D4ED8',
-                        secondary: '#4B5563',
-                        background: '#F3F4F6',
-                        surface: '#FFFFFF',
-                        footer: '#111827',
-                    }
-                }
-            }
-        }
-    </script>
-</head>
-
-<body class="bg-background font-inter text-gray-800">
-
-    <main class="container mx-auto max-w-4xl px-4 py-6">
-
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-semibold text-gray-900 tracking-tight">
-                Appointments
-            </h1>
-
-            <button onclick="openAddModal()"
-                class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium shadow hover:bg-blue-800 transition">
-                + Add Appointment
-            </button>
-        </div>
-
-        <!-- Stats -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-            <div class="bg-surface rounded-lg shadow p-4">
-                <p class="text-sm text-secondary">Total</p>
-                <p id="totalCount" class="text-xl font-semibold">0</p>
-            </div>
-            <div class="bg-surface rounded-lg shadow p-4">
-                <p class="text-sm text-secondary">Today</p>
-                <p class="text-xl font-semibold">2</p>
-            </div>
-            <div class="bg-surface rounded-lg shadow p-4">
-                <p class="text-sm text-secondary">Upcoming</p>
-                <p class="text-xl font-semibold">3</p>
-            </div>
-            <div class="bg-surface rounded-lg shadow p-4">
-                <p class="text-sm text-secondary">Cancelled</p>
-                <p class="text-xl font-semibold">1</p>
-            </div>
-        </div>
-
-        <!-- Appointments Table -->
-        <div class="bg-surface rounded-lg shadow overflow-hidden">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-50 text-secondary">
-                    <tr>
-                        <th class="px-4 py-3 text-left">#</th>
-                        <th class="px-4 py-3 text-left">Customer ID</th>
-                        <th class="px-4 py-3 text-left">Time</th>
-                        <th class="px-4 py-3 text-left">Service</th>
-                        <th class="px-4 py-3 text-right">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="appointmentsBody"></tbody>
-            </table>
-        </div>
-    </main>
-
-    <!-- Modal -->
-    <div id="modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center px-4 z-50">
-        <div class="bg-surface rounded-lg shadow-lg w-full max-w-md p-6">
-            <h2 id="modalTitle" class="text-lg font-semibold mb-4">
-                Appointment Details
-            </h2>
-
-            <div class="space-y-3 text-sm">
-                <div>
-                    <label class="text-secondary">Customer ID</label>
-                    <input id="modalCustomer" class="w-full mt-1 border rounded px-3 py-2" placeholder="CUST105" />
-                </div>
-
-                <div>
-                    <label class="text-secondary">Time</label>
-                    <input id="modalTime" class="w-full mt-1 border rounded px-3 py-2" placeholder="02:30 PM" />
-                </div>
-
-                <div>
-                    <label class="text-secondary">Service</label>
-                    <input id="modalService" class="w-full mt-1 border rounded px-3 py-2" placeholder="Consultation" />
-                </div>
-            </div>
-
-            <div class="flex justify-between items-center mt-6">
-                <button id="cancelBtn" onclick="cancelAppointment()" class="text-red-600 text-sm">
-                    Cancel Appointment
-                </button>
-
-                <div class="space-x-2">
-                    <button onclick="closeModal()" class="px-4 py-2 rounded bg-gray-200">
-                        Close
-                    </button>
-                    <button onclick="saveChanges()" class="px-4 py-2 rounded bg-primary text-white">
-                        Save
-                    </button>
-                </div>
-            </div>
-        </div>
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-semibold">Appointments</h1>
     </div>
 
-    <script>
-        const appointments = [
-            { id: 1, customer: 'CUST101', time: '10:00 AM', service: 'Haircut' },
-            { id: 2, customer: 'CUST102', time: '11:30 AM', service: 'Spa' },
-            { id: 3, customer: 'CUST103', time: '01:00 PM', service: 'Consultation' }
-        ];
+    <!-- Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
 
-        let activeIndex = null;
-        let mode = 'view';
+        <div class="bg-white p-4 rounded shadow">
+            <p class="text-gray-500 text-sm">Total</p>
+            <p class="text-xl font-semibold">{{ appointments|length }}</p>
+        </div>
 
-        const body = document.getElementById('appointmentsBody');
-        const totalCount = document.getElementById('totalCount');
+        <div class="bg-white p-4 rounded shadow">
+            <p class="text-gray-500 text-sm">Confirmed</p>
+            <p class="text-xl font-semibold">
+                {{ appointments | selectattr('status', 'equalto', 'confirmed') | list | length }}
+            </p>
+        </div>
 
-        const modalCustomer = document.getElementById('modalCustomer');
-        const modalTime = document.getElementById('modalTime');
-        const modalService = document.getElementById('modalService');
-        const modal = document.getElementById('modal');
-        const modalTitle = document.getElementById('modalTitle');
-        const cancelBtn = document.getElementById('cancelBtn');
+        <div class="bg-white p-4 rounded shadow">
+            <p class="text-gray-500 text-sm">Pending</p>
+            <p class="text-xl font-semibold">
+                {{ appointments | selectattr('status', 'equalto', 'pending') | list | length }}
+            </p>
+        </div>
 
-        function renderAppointments() {
-            body.innerHTML = '';
-            appointments.forEach((a, index) => {
-                body.innerHTML += `
-                <tr class="border-t">
-                    <td class="px-4 py-3">${a.id}</td>
-                    <td class="px-4 py-3">${a.customer}</td>
-                    <td class="px-4 py-3">${a.time}</td>
-                    <td class="px-4 py-3">${a.service}</td>
-                    <td class="px-4 py-3 text-right">
-                        <button onclick="openViewModal(${index})"
-                                class="text-primary font-medium">
-                            View
-                        </button>
-                    </td>
+        <div class="bg-white p-4 rounded shadow">
+            <p class="text-gray-500 text-sm">Cancelled</p>
+            <p class="text-xl font-semibold">
+                {{ appointments | selectattr('status', 'equalto', 'cancelled') | list | length }}
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded shadow overflow-hidden">
+        <table class="w-full text-sm">
+
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-3 text-left">#</th>
+                    <th class="px-4 py-3 text-left">Customer</th>
+                    <th class="px-4 py-3 text-left">Time</th>
+                    <th class="px-4 py-3 text-left">Service</th>
+                    <th class="px-4 py-3 text-left">Status</th>
+                    <th class="px-4 py-3 text-right">Actions</th>
                 </tr>
-            `;
-            });
-            totalCount.textContent = appointments.length;
-        }
+            </thead>
 
-        function openViewModal(index) {
-            mode = 'view';
-            activeIndex = index;
-            modalTitle.textContent = 'Appointment Details';
-            cancelBtn.style.display = 'block';
+            <tbody>
+                {% for a in appointments %}
+                <tr class="border-t">
 
-            const a = appointments[index];
-            modalCustomer.value = a.customer;
-            modalTime.value = a.time;
-            modalService.value = a.service;
+                    <td class="px-4 py-3">{{ loop.index }}</td>
 
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
+                    <td class="px-4 py-3">
+                        {{ a.customer_id }}
+                    </td>
 
-        function openAddModal() {
-            mode = 'add';
-            activeIndex = null;
-            modalTitle.textContent = 'Add Appointment';
-            cancelBtn.style.display = 'none';
+                    <td class="px-4 py-3">
+                        {{ a.start_time.strftime('%d %b %Y, %I:%M %p') }}
+                        <br>
+                        <span class="text-xs text-gray-500">
+                            to {{ a.end_time.strftime('%I:%M %p') }}
+                        </span>
+                    </td>
 
-            modalCustomer.value = '';
-            modalTime.value = '';
-            modalService.value = '';
+                    <td class="px-4 py-3">
+                        {{ a.service.service_name if a.service else '-' }}
+                    </td>
 
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
+                    <td class="px-4 py-3">
+                        {% if a.status == 'pending' %}
+                        <span class="text-yellow-600 font-medium">Pending</span>
+                        {% elif a.status == 'confirmed' %}
+                        <span class="text-green-600 font-medium">Confirmed</span>
+                        {% elif a.status == 'cancelled' %}
+                        <span class="text-red-600 font-medium">Cancelled</span>
+                        {% endif %}
+                    </td>
 
-        function closeModal() {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
+                    <td class="px-4 py-3 text-right space-x-2">
 
-        function saveChanges() {
-            if (mode === 'add') {
-                appointments.push({
-                    id: appointments.length + 1,
-                    customer: modalCustomer.value,
-                    time: modalTime.value,
-                    service: modalService.value
-                });
-            } else {
-                appointments[activeIndex].customer = modalCustomer.value;
-                appointments[activeIndex].time = modalTime.value;
-                appointments[activeIndex].service = modalService.value;
-            }
+                        {% if a.status == 'pending' %}
+                        <!-- Confirm -->
+                        <form method="POST" action="{{ url_for('vendor.confirm_appointment', id=a.id) }}"
+                            class="inline">
+                            <button class="text-green-600 text-sm">
+                                Confirm
+                            </button>
+                        </form>
+                        {% endif %}
 
-            renderAppointments();
-            closeModal();
-        }
+                        {% if a.status != 'cancelled' %}
+                        <!-- Cancel -->
+                        <form method="POST" action="{{ url_for('vendor.cancel_appointment', id=a.id) }}" class="inline">
+                            <button class="text-red-600 text-sm">
+                                Cancel
+                            </button>
+                        </form>
+                        {% endif %}
 
-        function cancelAppointment() {
-            appointments.splice(activeIndex, 1);
-            renderAppointments();
-            closeModal();
-        }
+                    </td>
 
-        renderAppointments();
-    </script>
+                </tr>
+                {% endfor %}
+            </tbody>
 
-</body>
+        </table>
+    </div>
 
-</html>
+</div>
+
 {% endblock %}

@@ -23,8 +23,19 @@ class Vendor(db.Model):
     
     rating = db.Column(db.Float)
     rater_no = db.Column(db.Integer)
+    services = db.relationship('Service', backref='vendor', lazy=True)
     # add other vendor-specific fields
     # --- Relationships ---
     # Example relationship for Addresses (assuming an 'Addresses' model exists)
     # addresses = db.relationship('Address', backref='vendor', lazy='dynamic')
+    
+class Service(db.Model):
+    
+    id = db.Column(db.Integer, primary_key=True)
+    vendor_id = db.Column(db.Integer, db.ForeignKey("vendor.id"))
+    service_name = db.Column(db.String(150), nullable=False)
+    service_type = db.Column(db.String(150), nullable=False)
+    duration_minutes = db.Column(db.Integer)
+    service_cost = db.Column(db.Integer)
+    
     

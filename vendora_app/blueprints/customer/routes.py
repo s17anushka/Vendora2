@@ -1,8 +1,10 @@
 from flask import request, render_template, redirect, url_for, Blueprint, flash
-from vendora_app.blueprints.vendor.models import Vendor
+from vendora_app.blueprints.vendor.models import Vendor,Service
 from vendora_app.blueprints.customer.models import Customer
+from vendora_app.blueprints.appointment.models import Appointment
 from flask_login import login_user, logout_user, current_user, login_required
 from vendora_app.app import db, bcrypt
+from datetime import datetime
 
 customer = Blueprint('customer', __name__, template_folder = 'templates')
 
@@ -50,10 +52,93 @@ def profile_setup():
 def dashboard():
     if current_user.is_customer != True:
         return "Access denied", 403
-    return render_template('customer/dashboard.html')
+    customer_id = current_user.customer_profile.id
+
+    appointments = Appointment.query.filter_by(
+        customer_id= current_user.customer_profile.id
+    ).order_by(Appointment.start_time.desc()).all()
+
+    vendors = Vendor.query.all()  # keep your existing logic
+
+    return render_template(
+        "customer/dashboard.html",
+        appointments=appointments,
+        vendors=vendors
+    )    
     
-    
+
+@customer.route('/cancel-appointment/<int:id>', methods=['POST'])
+@login_required
+def cancel_appointment(id):
+    appt = Appointment.query.get_or_404(id)
+
+    # security check
+    if appt.customer_id != current_user.customer_profile.id:
+        return "Unauthorized", 403
+
+    appt.status = 'cancelled'
+    db.session.commit()
+
+    return redirect(url_for('customer.dashboard'))
+
+@customer.route('/update-appointment/<int:id>', methods=['GET', 'POST'])
+@login_required
+def update_appointment(id):
+    appt = Appointment.query.get_or_404(id)
+
+    if appt.customer_id != current_user.customer_profile.id:
+        return "Unauthorized", 403
+
+    service = appt.service
+
+    if request.method == 'POST':
+        date = request.form.get('date')
+        time = request.form.get('time')
+
+        start_time = datetime.strptime(
+            f"{date} {time}",
+            "%Y-%m-%d %H:%M"
+        )
+
+        end_time = start_time + timedelta(
+            minutes=service.duration_minutes
+        )
+
+        # overlap check (ignore current appointment)
+        conflict = Appointment.query.filter(
+            Appointment.vendor_id == appt.vendor_id,
+            Appointment.id != appt.id,
+            Appointment.start_time < end_time,
+            Appointment.end_time > start_time
+        ).first()
+
+        if conflict:
+            return "Time slot not available"
+
+        appt.start_time = start_time
+        appt.end_time = end_time
+        appt.status = "pending"  # reset after change
+
+        db.session.commit()
+
+        return redirect(url_for('customer.dashboard'))
+
+    return render_template(
+        "customer/update_appointment.html",
+        appt=appt
+    )
+
 @customer.route('/vendor/<int:vendor_id>')
+
 def vendor_details(vendor_id):
     v = Vendor.query.get_or_404(vendor_id)
-    return render_template("customer/vendor_detail.html", vendor=v)
+
+    services = Service.query.filter_by(
+        vendor_id=vendor_id
+    ).all()
+
+    return render_template(
+        "customer/vendor_detail.html",
+        vendor=v,
+        services=services
+    )

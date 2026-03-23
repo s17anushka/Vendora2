@@ -35,22 +35,25 @@ def create_app():
     #from vendora_app.blueprints.user.routes import user
     from vendora_app.blueprints.vendor.routes import vendor
     from vendora_app.blueprints.customer.routes import customer
+    from vendora_app.blueprints.appointment.routes import appointment
     
     from vendora_app.blueprints.auth.models import User
     from vendora_app.blueprints.vendor.models import Vendor
+    from vendora_app.blueprints.vendor.models import Service
     from vendora_app.blueprints.customer.models import Customer
+    from vendora_app.blueprints.appointment.models import Appointment
     
     
     @login_manager.user_loader
     def load_user(uid):
         return User.query.get(uid)
     
-
     app.register_blueprint(core, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/auth')
    # app.register_blueprint(user, url_prefix='/user')
     app.register_blueprint(vendor, url_prefix='/vendor')
     app.register_blueprint(customer, url_prefix='/customer')
+    app.register_blueprint(appointment, url_prefix='/appointment')
     
     migrate = Migrate(app,db)
     
