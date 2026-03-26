@@ -18,7 +18,7 @@
                 </h2>
 
                 <p class="text-sm text-gray-500">
-                    {{ service.service_type }}
+                    {{ service_types[service.service_type | int] }}
                 </p>
 
                 <p class="text-sm mt-2">
@@ -33,9 +33,13 @@
                 <div class="flex gap-3 mt-4">
 
                     <!-- Edit -->
-                    <button
-                        onclick="openEditModal({{ service.id }}, '{{ service.service_name }}', '{{ service.service_type }}', {{ service.duration_minutes or 0 }}, {{ service.service_cost or 0 }})"
-                        class="text-blue-600 text-sm">
+                    <button onclick="openEditModal(
+                                {{ service.id }},
+                                `{{ service.service_name }}`,
+                                {{ service.service_type }},
+                                {{ service.duration_minutes or 0 }},
+                                {{ service.service_cost or 0 }}
+                            )" class="text-blue-600 text-sm">
                         Edit
                     </button>
 
@@ -73,9 +77,15 @@
             <input type="text" name="service_name" id="service_name" placeholder="Service Name"
                 class="w-full mb-3 border p-2 rounded" required>
 
-            <input type="text" name="service_type" id="service_type" placeholder="Service Type"
-                class="w-full mb-3 border p-2 rounded" required>
+            <select name="service_type" id="service_type" class="w-full mb-3 border p-2 rounded" required>
 
+                <option value="">Select Service Type</option>
+
+                {% for key, value in service_types.items() %}
+                <option value="{{ key }}">{{ value }}</option>
+                {% endfor %}
+
+            </select>
             <input type="number" name="duration_minutes" id="duration" placeholder="Duration (minutes)"
                 class="w-full mb-3 border p-2 rounded">
 

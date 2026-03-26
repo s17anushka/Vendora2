@@ -8,6 +8,18 @@ from datetime import datetime
 
 customer = Blueprint('customer', __name__, template_folder = 'templates')
 
+SERVICE_TYPES = {
+    1: "Haircuts & Styling",
+    2: "Facial & Clean-ups",
+    3: "Hair Spa & Deep Conditioning",
+    4: "Hair Coloring",
+    5: "Manicures & Pedicures",
+    6: "Head & Body Massage",
+    7: "Bleach & De-Tan",
+    8: "Waxing / Threading"
+}
+
+
 @customer.route('/')
 def index():
     return render_template('customer/index.html')
@@ -64,6 +76,7 @@ def dashboard():
         "customer/dashboard.html",
         appointments=appointments,
         vendors=vendors
+        
     )    
     
 
@@ -140,7 +153,8 @@ def vendor_details(vendor_id):
     return render_template(
         "customer/vendor_detail.html",
         vendor=v,
-        services=services
+        services=services,
+         service_types = SERVICE_TYPES
     )
 
 @customer.route('/rate/<int:appointment_id>', methods=['POST'])

@@ -6,6 +6,18 @@ from vendora_app.app import db
 from cloudinary.uploader import upload
 vendor = Blueprint('vendor', __name__, template_folder = 'templates')
 
+SERVICE_TYPES = {
+    1: "Haircuts & Styling",
+    2: "Facial & Clean-ups",
+    3: "Hair Spa & Deep Conditioning",
+    4: "Hair Coloring",
+    5: "Manicures & Pedicures",
+    6: "Head & Body Massage",
+    7: "Bleach & De-Tan",
+    8: "Waxing / Threading"
+}
+
+
 @vendor.route('/')
 def index():
     return render_template('vendor/index.html')
@@ -162,7 +174,7 @@ def services():
 
     # GET request
     services_data = Service.query.filter_by(vendor_id=current_user.vendor_profile.id).all()
-    return render_template('vendor/services.html',vendor=vendor, services = services_data )
+    return render_template('vendor/services.html',vendor=vendor, services = services_data,service_types=SERVICE_TYPES )
  
 @vendor.route('/add-service', methods=['POST'])
 def add_service():
@@ -171,7 +183,7 @@ def add_service():
     new_service = Service(
         vendor_id=vendor_id,
         service_name=request.form.get('service_name'),
-        service_type=request.form.get('service_type'),
+        service_type=int(request.form.get('service_type')),
         duration_minutes=int(request.form.get('duration_minutes')) if request.form.get('duration_minutes') else None,
         service_cost=int(request.form.get('service_cost')) if request.form.get('service_cost') else None
     )
@@ -186,7 +198,7 @@ def edit_service(id):
     service = Service.query.get_or_404(id)
 
     service.service_name = request.form.get('service_name')
-    service.service_type = request.form.get('service_type')
+    service_type = int(request.form.get('service_type'))
     service.duration_minutes = int(request.form.get('duration_minutes')) if request.form.get('duration_minutes') else None
     service.service_cost = int(request.form.get('service_cost')) if request.form.get('service_cost') else None
 

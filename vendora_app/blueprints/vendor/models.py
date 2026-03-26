@@ -34,7 +34,7 @@ class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     vendor_id = db.Column(db.Integer, db.ForeignKey("vendor.id"))
     service_name = db.Column(db.String(150), nullable=False)
-    service_type = db.Column(db.String(150), nullable=False)
+    service_type = db.Column(db.Integer, nullable=False)
     duration_minutes = db.Column(db.Integer)
     service_cost = db.Column(db.Integer)
     
