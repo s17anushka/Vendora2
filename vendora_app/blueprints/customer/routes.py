@@ -35,28 +35,47 @@ def vendors():
     
     return render_template('customer/vendors.html', vendors=vendors)
 
-@customer.route('/profile_setup',methods=['GET','POST'])
+@customer.route('/profile_setup', methods=['GET', 'POST'])
 @login_required
 def profile_setup():
-    if request.method=='GET':
+    if request.method == 'GET':
         return render_template('customer/profile_setup.html')
     
-    # Save Customer Info
+    # Extract data from form
     full_name = request.form.get('full_name')
     address = request.form.get('address')
     phone = request.form.get('phone')
+    age = request.form.get('age')
+    gender = request.form.get('gender')
+    city = request.form.get('city')
     
     # Check if already exists
     if current_user.customer_profile:
-        flash('Profile already exist','info')
+        flash('Profile already exists', 'info')
         return redirect(url_for('customer.dashboard'))
     
-    new_profile = Customer(user_id=current_user.uid, full_name=full_name,address=address,phone=phone)
-    db.session.add(new_profile)
-    db.session.commit()
+    # Create new profile with additional attributes
+    new_profile = Customer(
+        user_id=current_user.uid, 
+        full_name=full_name,
+        address=address,
+        phone=phone,
+        age=age,       # Added
+        gender=gender, # Added
+        city=city      # Added
+    )
+    
+    try:
+        db.session.add(new_profile)
+        db.session.commit()
+        flash('Customer profile completed successfully!', 'success')
+        return redirect(url_for('customer.dashboard'))
+    except Exception as e:
+        db.session.rollback()
+        flash('An error occurred. Please try again.', 'danger')
+        return redirect(url_for('customer.profile_setup'))
 
-    flash('Customer profile completed successfully!', 'success')
-    return redirect(url_for('customer.dashboard'))
+
 
 
 @customer.route('/dashboard')

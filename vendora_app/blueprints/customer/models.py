@@ -8,3 +8,7 @@ class Customer(db.Model):
     address = db.Column(db.String(200))
     phone = db.Column(db.String(20))
     # add other customer-specific fields
+    
+    age = db.Column(db.Integer)
+    gender = db.Column(db.String(20))
+    city = db.Column(db.String(100))

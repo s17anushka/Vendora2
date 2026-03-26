@@ -5,52 +5,72 @@
 {% block content %}
 <div class="min-h-screen flex items-center justify-center bg-background px-4 py-12">
     <div class="w-full max-w-lg bg-surface p-8 sm:p-10 rounded-2xl shadow-lg border border-gray-200">
-        <!-- Heading -->
-        <h1 class="text-3xl font-bold text-gray-900 text-center mb-2">
-            Complete Your Profile
-        </h1>
+        <h1 class="text-3xl font-bold text-gray-900 text-center mb-2">Complete Your Profile</h1>
         <p class="text-secondary text-center mb-8">
             Tell us a bit more about yourself to get started with <span
                 class="text-primary font-semibold">Vendora</span>.
         </p>
 
-        <!-- Profile Form -->
-        <form action="{{ url_for('customer.profile_setup') }}" method="POST" class="space-y-6">
-            <!-- Full Name -->
+        <form action="{{ url_for('customer.profile_setup') }}" method="POST" class="space-y-5">
             <div>
-                <label for="full_name" class="block text-sm font-medium text-secondary mb-1">
-                    Full Name
-                </label>
-                <input type="text" id="full_name" name="full_name" placeholder="Enter your full name" required
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition duration-150 shadow-sm" />
+                <label for="full_name" class="block text-sm font-medium text-secondary mb-1">Full Name</label>
+                <input type="text" id="full_name" name="full_name" placeholder="John Doe" required
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition shadow-sm" />
             </div>
 
-            <!-- Address -->
-            <div>
-                <label for="address" class="block text-sm font-medium text-secondary mb-1">
-                    Address
-                </label>
-                <input type="text" id="address" name="address" placeholder="Enter your address" required
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition duration-150 shadow-sm" />
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="age" class="block text-sm font-medium text-secondary mb-1">Age</label>
+                    <input type="number" id="age" name="age" placeholder="25" min="1" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition shadow-sm" />
+                </div>
+                <div>
+                    <label for="gender" class="block text-sm font-medium text-secondary mb-1">Gender</label>
+                    <select id="gender" name="gender" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition shadow-sm bg-white">
+                        <option value="" disabled selected>Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                </div>
             </div>
 
-            <!-- Phone -->
-            <div>
-                <label for="phone" class="block text-sm font-medium text-secondary mb-1">
-                    Phone Number
-                </label>
-                <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition duration-150 shadow-sm" />
+            <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="city" class="block text-sm font-medium text-secondary mb-1">City</label>
+                        <select id="city" name="city" required
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition shadow-sm bg-white text-gray-700">
+                            <option value="" disabled selected>Select City</option>
+                            <option value="Bhopal">Bhopal</option>
+                            <option value="Indore">Indore</option>
+                            <option value="Sehore">Sehore</option>
+                            <option value="Ashta">Ashta</option>
+                        </select>
+                    </div>
+
+                </div>
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-secondary mb-1">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" placeholder="+1..." required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition shadow-sm" />
+                </div>
             </div>
 
-            <!-- Submit Button -->
+            <div>
+                <label for="address" class="block text-sm font-medium text-secondary mb-1">Address</label>
+                <input type="text" id="address" name="address" placeholder="123 Street Name" required
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition shadow-sm" />
+            </div>
+
             <button type="submit"
-                class="w-full py-3 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-blue-800 transition duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
+                class="w-full py-3 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-blue-800 transition duration-200">
                 Save Profile
             </button>
         </form>
 
-        <!-- Info / Footer -->
         <p class="text-center text-sm text-secondary mt-8">
             You can always update your profile later in your account settings.
         </p>

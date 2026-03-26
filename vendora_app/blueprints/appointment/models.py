@@ -8,7 +8,7 @@ class Appointment(db.Model):
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'))
     vendor_id = db.Column(db.Integer, db.ForeignKey('vendor.id'))
     service_id = db.Column(db.Integer, db.ForeignKey('service.id'))
-
+    service_type = db.Column(db.Integer, nullable=False)
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
 
@@ -19,6 +19,8 @@ class Appointment(db.Model):
     vendor = db.relationship('Vendor')
     service = db.relationship('Service')
     
+    
     # ✅ NEW: Sentiment column
     sentiment = db.Column(db.String(20), nullable=True)  
     # values: "positive", "negative", "neutral"
+    
