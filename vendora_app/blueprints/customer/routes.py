@@ -142,3 +142,34 @@ def vendor_details(vendor_id):
         vendor=v,
         services=services
     )
+
+@customer.route('/rate/<int:appointment_id>', methods=['POST'])
+@login_required
+def rate_appointment(appointment_id):
+    appointment = Appointment.query.get_or_404(appointment_id)
+
+    # ✅ Security checks
+    if appointment.customer_id != current_user.customer_profile.id:
+        flash("Unauthorized action", "danger")
+        return redirect(url_for('customer.dashboard'))
+    """
+    if appointment.status != "completed":
+        flash("You can only review completed appointments", "warning")
+        return redirect(url_for('customer.dashboard'))
+    """
+    if appointment.rating is not None:
+        flash("You have already reviewed this appointment", "info")
+        return redirect(url_for('customer.dashboard'))
+
+    # ✅ Get data
+    rating = int(request.form.get('rating'))
+    review = request.form.get('review')
+
+    # ✅ Save
+    appointment.rating = rating
+    appointment.review = review
+
+    db.session.commit()
+
+    flash(" Thank you for your feedback!", "success")
+    return redirect(url_for('customer.dashboard'))

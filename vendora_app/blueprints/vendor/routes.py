@@ -293,3 +293,25 @@ def reviews():
 def support():
     return render_template('vendor/support.html')
 
+@vendor.route('/complete_appointment/<int:id>', methods=['POST'])
+@login_required
+def complete_appointment(id):
+    appointment = Appointment.query.get_or_404(id)
+
+    # Optional: ensure correct vendor
+    if appointment.vendor_id != current_user.vendor_profile.id:
+        flash("Unauthorized action", "danger")
+        return redirect(url_for('vendor.appointments'))
+
+    # Only confirmed can be completed
+    if appointment.status != "confirmed":
+        flash("Only confirmed appointments can be completed", "warning")
+        return redirect(url_for('vendor.appointments'))
+
+    # ✅ Mark as completed
+    appointment.status = "completed"
+    db.session.commit()
+
+    flash("Appointment marked as completed ✅", "success")
+    return redirect(url_for('vendor.appointments'))
+

@@ -29,6 +29,12 @@ def create_app():
     login_manager.init_app(app)
     bcrypt.init_app(app)
     
+    # ✅ LOGIN CONFIG (IMPORTANT)
+    login_manager.login_view = 'auth.login'
+    login_manager.login_message = "Please login to continue"
+    login_manager.login_message_category = "warning"
+    
+    
     #import and register all blueprints
     from vendora_app.blueprints.core.routes import core
     from vendora_app.blueprints.auth.routes import auth

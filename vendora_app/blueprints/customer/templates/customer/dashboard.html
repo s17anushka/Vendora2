@@ -69,21 +69,42 @@
                         </p>
                     </div>
 
-                    <div class="mt-4 flex gap-2">
-                        {% if appt.status != 'cancelled' %}
-                        <form method="POST" action="{{ url_for('customer.cancel_appointment', id=appt.id) }}"
-                            class="w-1/2">
-                            <button
-                                class="w-full bg-red-500 text-white py-1.5 rounded-lg text-sm hover:bg-red-600 transition">
-                                Cancel
-                            </button>
-                        </form>
+                    <div class="mt-4 flex flex-col gap-2">
 
-                        <a href="{{ url_for('customer.update_appointment', id=appt.id) }}"
-                            class="w-1/2 text-center bg-blue-600 text-white py-1.5 rounded-lg text-sm hover:bg-blue-700 transition">
-                            Reschedule
-                        </a>
+                        {% if appt.status != 'cancelled' %}
+                        <div class="flex gap-2">
+
+                            <!-- Cancel -->
+                            <form method="POST" action="{{ url_for('customer.cancel_appointment', id=appt.id) }}"
+                                class="w-1/2">
+                                <button
+                                    class="w-full border border-red-300 text-red-600 py-2 rounded-lg text-sm hover:bg-red-50 transition">
+                                    Cancel
+                                </button>
+                            </form>
+
+                            <!-- Reschedule -->
+                            <a href="{{ url_for('customer.update_appointment', id=appt.id) }}"
+                                class="w-1/2 text-center border border-gray-300 text-gray-700 py-2 rounded-lg text-sm hover:bg-gray-100 transition">
+                                Reschedule
+                            </a>
+
+                        </div>
                         {% endif %}
+
+                        <!-- REVIEW -->
+                        {% if appt.status == 'confirmed' and not appt.rating %}
+                        <button onclick="openReviewModal({{ appt.id }})"
+                            class="w-full bg-gray-900 text-white py-2 rounded-lg text-sm hover:bg-black transition">
+                            Give Review
+                        </button>
+
+                        {% elif appt.rating %}
+                        <div class="text-center text-gray-700 text-sm py-2 border rounded-lg bg-gray-50">
+                            Rated {{ appt.rating }}/5
+                        </div>
+                        {% endif %}
+
                     </div>
                 </div>
                 {% endfor %}
@@ -116,4 +137,58 @@
 
     </div>
 </div>
+<!-- Review Modal -->
+<div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50">
+    <div class="bg-white rounded-xl p-6 w-full max-w-md">
+        <h2 class="text-xl font-semibold mb-4">Rate Your Experience</h2>
+
+        <form id="reviewForm" method="POST">
+
+            <!-- Rating -->
+            <label class="block mb-2 text-sm font-medium">Rating (1–5)</label>
+            <select name="rating" class="w-full border rounded-lg p-2 mb-4" required>
+                <option value="">Select Rating</option>
+                <option value="5">⭐⭐⭐⭐⭐</option>
+                <option value="4">⭐⭐⭐⭐</option>
+                <option value="3">⭐⭐⭐</option>
+                <option value="2">⭐⭐</option>
+                <option value="1">⭐</option>
+            </select>
+
+            <!-- Review -->
+            <label class="block mb-2 text-sm font-medium">Review</label>
+            <textarea name="review" rows="3" class="w-full border rounded-lg p-2 mb-4"
+                placeholder="Write your experience..."></textarea>
+
+            <!-- Buttons -->
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeReviewModal()" class="px-4 py-2 bg-gray-300 rounded-lg">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg">
+                    Submit
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<!-- Page-specific JavaScript here -->
+<script>
+    function openReviewModal(appointmentId) {
+        const modal = document.getElementById("reviewModal");
+        const form = document.getElementById("reviewForm");
+
+        form.action = "/customer/rate/" + appointmentId;
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    }
+
+    function closeReviewModal() {
+        const modal = document.getElementById("reviewModal");
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+</script>
 {% endblock %}
