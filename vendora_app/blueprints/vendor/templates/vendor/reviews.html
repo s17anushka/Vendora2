@@ -1,118 +1,72 @@
 {% extends "base.html" %}
 
-{% block title %}Reviews{% endblock %}
-
-{% block head_content %}
-<!-- Page-specific head content -->
-{% endblock %}
+{% block title %}My Reviews{% endblock %}
 
 {% block content %}
 <div class="bg-background min-h-screen py-8 px-4">
-
     <div class="container mx-auto max-w-4xl">
 
-        <!-- Page Title -->
-        <h1 class="text-2xl font-semibold text-gray-900 tracking-tight mb-2">
-            Customer Reviews
-        </h1>
-        <p class="text-sm text-secondary mb-6">
-            See what customers are saying about your services.
+        <h1 class="text-2xl font-semibold text-gray-900 tracking-tight mb-2">Customer Feedback</h1>
+        <p class="text-sm text-secondary mb-6">See how your business is performing based on your AI-analyzed reviews.
         </p>
 
-        <!-- Rating Summary -->
         <div
             class="bg-surface rounded-lg shadow p-5 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <p class="text-sm text-secondary">Average Rating</p>
                 <p class="text-3xl font-semibold text-gray-900">
-                    4.6 <span class="text-yellow-500">★</span>
+                    {{ stats.avg }} <span class="text-yellow-500">★</span>
                 </p>
-                <p class="text-xs text-secondary">Based on 486 reviews</p>
+                <p class="text-xs text-secondary">Based on {{ stats.total }} reviews</p>
             </div>
 
             <div class="flex gap-3 text-sm">
-                <span class="px-3 py-1 rounded-full bg-green-100 text-green-700">
-                    Positive 78%
-                </span>
-                <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700">
-                    Neutral 14%
-                </span>
-                <span class="px-3 py-1 rounded-full bg-red-100 text-red-700">
-                    Negative 8%
-                </span>
+                <span class="px-3 py-1 rounded-full bg-green-100 text-green-700">Positive {{ stats.pos }}%</span>
+                <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700">Neutral {{ stats.neu }}%</span>
+                <span class="px-3 py-1 rounded-full bg-red-100 text-red-700">Negative {{ stats.neg }}%</span>
             </div>
         </div>
 
-        <!-- Reviews List -->
         <div class="space-y-4">
+            {% for appointment, customer, service in reviews_data %}
+            <div class="bg-surface rounded-lg shadow p-5 border-l-4 
+                {% if appointment.sentiment == 'positive' %} border-green-500 
+                {% elif appointment.sentiment == 'negative' %} border-red-500 
+                {% else %} border-yellow-500 {% endif %}">
 
-            <!-- Review Card -->
-            <div class="bg-surface rounded-lg shadow p-5">
                 <div class="flex justify-between items-start mb-2">
                     <div>
-                        <p class="font-medium text-gray-900">Rahul Sharma</p>
-                        <p class="text-xs text-secondary">Service: Haircut</p>
+                        <p class="font-medium text-gray-900">{{ customer.full_name }}</p>
+                        <p class="text-xs text-secondary">Service: {{ service.service_name }}</p>
                     </div>
-                    <span class="text-yellow-500 font-medium">★★★★★</span>
-                </div>
-                <p class="text-sm text-gray-700">
-                    Very professional service. The appointment was on time and the staff was polite.
-                </p>
-                <p class="text-xs text-secondary mt-2">2 days ago</p>
-            </div>
-
-            <!-- Review Card -->
-            <div class="bg-surface rounded-lg shadow p-5">
-                <div class="flex justify-between items-start mb-2">
-                    <div>
-                        <p class="font-medium text-gray-900">Ananya Verma</p>
-                        <p class="text-xs text-secondary">Service: Spa</p>
+                    <div class="flex flex-col items-end">
+                        <span class="text-yellow-500 font-medium">
+                            {% for i in range(appointment.rating) %}★{% endfor %}
+                            {% for i in range(5 - appointment.rating) %}☆{% endfor %}
+                        </span>
+                        <span class="text-[10px] uppercase font-bold mt-1 
+                            {% if appointment.sentiment == 'positive' %} text-green-600 
+                            {% elif appointment.sentiment == 'negative' %} text-red-600 
+                            {% else %} text-yellow-600 {% endif %}">
+                            {{ appointment.sentiment or 'Neutral' }}
+                        </span>
                     </div>
-                    <span class="text-yellow-500 font-medium">★★★★☆</span>
                 </div>
-                <p class="text-sm text-gray-700">
-                    Great experience overall. The spa session was relaxing, but waiting time was a bit long.
-                </p>
-                <p class="text-xs text-secondary mt-2">5 days ago</p>
-            </div>
 
-            <!-- Review Card -->
-            <div class="bg-surface rounded-lg shadow p-5">
-                <div class="flex justify-between items-start mb-2">
-                    <div>
-                        <p class="font-medium text-gray-900">Mohit Jain</p>
-                        <p class="text-xs text-secondary">Service: Consultation</p>
-                    </div>
-                    <span class="text-yellow-500 font-medium">★★★★★</span>
+                <p class="text-sm text-gray-700 italic">"{{ appointment.review }}"</p>
+
+                <div class="flex justify-between items-center mt-3">
+                    <p class="text-xs text-secondary">Appointment #{{ appointment.id }}</p>
+                    <p class="text-xs text-secondary">{{ appointment.start_time.strftime('%b %d, %Y') }}</p>
                 </div>
-                <p class="text-sm text-gray-700">
-                    Clear guidance and very friendly behavior. Will definitely book again.
-                </p>
-                <p class="text-xs text-secondary mt-2">1 week ago</p>
             </div>
-
-            <!-- Review Card -->
-            <div class="bg-surface rounded-lg shadow p-5">
-                <div class="flex justify-between items-start mb-2">
-                    <div>
-                        <p class="font-medium text-gray-900">Sneha Patel</p>
-                        <p class="text-xs text-secondary">Service: Grooming</p>
-                    </div>
-                    <span class="text-yellow-500 font-medium">★★★☆☆</span>
-                </div>
-                <p class="text-sm text-gray-700">
-                    Service was okay. Could improve cleanliness and communication.
-                </p>
-                <p class="text-xs text-secondary mt-2">2 weeks ago</p>
+            {% else %}
+            <div class="bg-surface rounded-lg shadow p-10 text-center text-secondary">
+                No reviews found for your business yet.
             </div>
-
+            {% endfor %}
         </div>
 
     </div>
-
 </div>
-{% endblock %}
-
-{% block scripts %}
-<!-- Page-specific JavaScript (not required for now) -->
 {% endblock %}

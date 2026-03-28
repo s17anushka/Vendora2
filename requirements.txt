@@ -25,3 +25,4 @@ python-dotenv
 flask-pymongo
 jsonify
 cryptography
+requests

@@ -23,7 +23,7 @@ class Vendor(db.Model):
     
     rating = db.Column(db.Float)
     rater_no = db.Column(db.Integer)
-    services = db.relationship('Service', backref='vendor', lazy=True)
+    services = db.relationship('Service', backref='vendor', lazy=True,  cascade="all, delete-orphan")
     # add other vendor-specific fields
     # --- Relationships ---
     # Example relationship for Addresses (assuming an 'Addresses' model exists)

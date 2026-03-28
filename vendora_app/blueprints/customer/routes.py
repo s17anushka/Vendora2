@@ -5,6 +5,7 @@ from vendora_app.blueprints.appointment.models import Appointment
 from flask_login import login_user, logout_user, current_user, login_required
 from vendora_app.app import db, bcrypt
 from datetime import datetime
+import requests
 
 customer = Blueprint('customer', __name__, template_folder = 'templates')
 
@@ -175,6 +176,7 @@ def vendor_details(vendor_id):
         services=services,
          service_types = SERVICE_TYPES
     )
+ # Ensure you have 'requests' installed
 
 @customer.route('/rate/<int:appointment_id>', methods=['POST'])
 @login_required
@@ -185,11 +187,7 @@ def rate_appointment(appointment_id):
     if appointment.customer_id != current_user.customer_profile.id:
         flash("Unauthorized action", "danger")
         return redirect(url_for('customer.dashboard'))
-    """
-    if appointment.status != "completed":
-        flash("You can only review completed appointments", "warning")
-        return redirect(url_for('customer.dashboard'))
-    """
+
     if appointment.rating is not None:
         flash("You have already reviewed this appointment", "info")
         return redirect(url_for('customer.dashboard'))
@@ -198,11 +196,56 @@ def rate_appointment(appointment_id):
     rating = int(request.form.get('rating'))
     review = request.form.get('review')
 
-    # ✅ Save
+    # ✅ Step 1: Analyze Sentiment via API
+    sentiment_label = "neutral"  # Default fallback
+    if review and review.strip():
+        try:
+            # The API you created expects a JSON: {"text": "your review"}
+            api_url = "https://priyam1105-customer-sentiment-analysis.hf.space/predict"
+            response = requests.post(api_url, json={"text": review}, timeout=5)
+            
+            if response.status_code == 200:
+                result = response.json()
+                sentiment_label = result.get('sentiment', 'neutral')
+        except Exception as e:
+            # Log the error but don't crash the app if the API is down
+            print(f"Sentiment API Error: {e}")
+
+    # ✅ Save to MySQL
     appointment.rating = rating
     appointment.review = review
+    appointment.sentiment = sentiment_label  # Save the predicted sentiment
 
     db.session.commit()
 
-    flash(" Thank you for your feedback!", "success")
+    flash("Thank you for your feedback!", "success")
     return redirect(url_for('customer.dashboard'))
+
+HF_API_URL = "https://priyam1105-vendor-recsys.hf.space/recommend"
+@customer.route('/recommendation')
+def show_recommendation():
+    customer_id = current_user.customer_profile.id 
+
+    try:
+        payload = {"customer_id": int(customer_id), "top_n": 6}
+        response = requests.post(HF_API_URL, json=payload)
+        
+        recommended_vendors = []
+        if response.status_code == 200:
+            api_data = response.json().get('recommendations', [])
+            
+            # 1. Extract just the IDs from the AI response
+            vendor_ids = [item['vendor_id'] for item in api_data]
+            
+            # 2. Fetch full objects from your database
+            # We use a case statement to keep them in the order the AI suggested
+            if vendor_ids:
+                from sqlalchemy import case
+                ordering = case({id: i for i, id in enumerate(vendor_ids)}, value=Vendor.id)
+                recommended_vendors = Vendor.query.filter(Vendor.id.in_(vendor_ids)).order_by(ordering).all()
+
+        return render_template('customer/recommend.html', vendors=recommended_vendors)
+
+    except Exception as e:
+        print(f"ML API Error: {e}")
+        return render_template('customer/recommend.html', vendors=[])

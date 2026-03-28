@@ -1,11 +1,12 @@
 from flask import request, render_template, redirect, url_for, Blueprint, flash
 from vendora_app.blueprints.vendor.models import Vendor, Service
+from vendora_app.blueprints.customer.models import Customer
 from vendora_app.blueprints.appointment.models import Appointment
 from flask_login import login_user, logout_user, current_user, login_required
 from vendora_app.app import db
 from cloudinary.uploader import upload
 vendor = Blueprint('vendor', __name__, template_folder = 'templates')
-
+from sqlalchemy import func
 SERVICE_TYPES = {
     1: "Haircuts & Styling",
     2: "Facial & Clean-ups",
@@ -296,10 +297,52 @@ def cancel_appointment(id):
 @vendor.route('/analytics')
 def analytics():
     return render_template('vendor/analytics.html')
+from flask import render_template
+from flask_login import login_required, current_user
+from sqlalchemy import func
+# Assuming your models are named Appointment, Customer, Service
+# from your_app.models import db, Appointment, Customer, Service
 
 @vendor.route('/reviews')
+@login_required
 def reviews():
-    return render_template('vendor/reviews.html')
+    # 1. Access the vendor ID from the users -> vendor relationship
+    # Based on your table desc, current_user is from 'users', 
+    # which connects to 'vendor' via user_id.
+    vendor_id = current_user.vendor_profile.id 
+
+    # 2. Query appointments for this vendor that have reviews
+    # We join with Customer to get 'full_name' and Service for 'service_name'
+    vendor_reviews = db.session.query(Appointment, Customer, Service).\
+        join(Customer, Appointment.customer_id == Customer.id).\
+        join(Service, Appointment.service_id == Service.id).\
+        filter(Appointment.vendor_id == vendor_id).\
+        filter(Appointment.rating.isnot(None)).\
+        order_by(Appointment.id.desc()).all()
+
+    # 3. Calculate Summary Statistics
+    total_reviews = len(vendor_reviews)
+    
+    if total_reviews > 0:
+        avg_rating = db.session.query(func.avg(Appointment.rating)).\
+            filter(Appointment.vendor_id == vendor_id).\
+            filter(Appointment.rating.isnot(None)).scalar()
+        
+        pos_count = Appointment.query.filter_by(vendor_id=vendor_id, sentiment='positive').count()
+        neu_count = Appointment.query.filter_by(vendor_id=vendor_id, sentiment='neutral').count()
+        neg_count = Appointment.query.filter_by(vendor_id=vendor_id, sentiment='negative').count()
+
+        stats = {
+            "avg": round(avg_rating, 1),
+            "total": total_reviews,
+            "pos": round((pos_count / total_reviews) * 100),
+            "neu": round((neu_count / total_reviews) * 100),
+            "neg": round((neg_count / total_reviews) * 100)
+        }
+    else:
+        stats = {"avg": 0, "total": 0, "pos": 0, "neu": 0, "neg": 0}
+
+    return render_template('vendor/reviews.html', reviews_data=vendor_reviews, stats=stats)
 
 @vendor.route('/support')
 def support():
