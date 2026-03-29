@@ -5,6 +5,12 @@ from vendora_app.blueprints.appointment.models import Appointment
 from flask_login import login_user, logout_user, current_user, login_required
 from vendora_app.app import db
 from cloudinary.uploader import upload
+from sqlalchemy import func, desc
+from datetime import datetime, timedelta
+import json
+
+
+
 vendor = Blueprint('vendor', __name__, template_folder = 'templates')
 from sqlalchemy import func
 SERVICE_TYPES = {
@@ -294,14 +300,63 @@ def cancel_appointment(id):
 
     return redirect(url_for('vendor.appointments'))
 
+
 @vendor.route('/analytics')
 def analytics():
-    return render_template('vendor/analytics.html')
-from flask import render_template
-from flask_login import login_required, current_user
-from sqlalchemy import func
-# Assuming your models are named Appointment, Customer, Service
-# from your_app.models import db, Appointment, Customer, Service
+    # 1. Vendor ID from relationship
+    v_id = current_user.vendor_profile.id
+    
+    # 2. Total Revenue (Directly from Appointment)
+    # This is now a very fast, single-table query
+    total_revenue = db.session.query(func.sum(Appointment.service_cost))\
+        .filter(Appointment.vendor_id == v_id, Appointment.status == 'completed')\
+        .scalar() or 0
+
+    # 3. Total Unique Customers
+    total_customers = db.session.query(func.count(func.distinct(Appointment.customer_id)))\
+        .filter(Appointment.vendor_id == v_id).scalar() or 0
+
+    # 4. Average Rating
+    # float() ensures compatibility with Jinja and JavaScript
+    avg_rating = db.session.query(func.avg(Appointment.rating))\
+        .filter(Appointment.vendor_id == v_id, Appointment.rating.isnot(None))\
+        .scalar() or 0
+
+    # 5. Most Used Services (Pie Chart)
+    # We still join Service here just to get the 'service_name' for the labels
+    service_stats = db.session.query(
+        Service.service_name, 
+        func.count(Appointment.id).label('count')
+    ).join(Appointment, Appointment.service_id == Service.id)\
+     .filter(Appointment.vendor_id == v_id)\
+     .group_by(Service.service_name)\
+     .order_by(desc('count')).all()
+    
+    service_labels = [s[0] for s in service_stats]
+    service_counts = [s[1] for s in service_stats]
+
+    # 6. Demand Trend (Line Chart)
+    trend_query = db.session.query(
+        func.date_format(Appointment.start_time, '%b').label('month_name'), 
+        func.count(Appointment.id).label('app_count')
+    ).filter(Appointment.vendor_id == v_id)\
+     .group_by(func.date_format(Appointment.start_time, '%Y-%m'), 'month_name')\
+     .order_by(func.min(Appointment.start_time))\
+     .all()
+
+    trend_labels = [t[0] for t in trend_query]
+    trend_counts = [t[1] for t in trend_query]
+
+    return render_template(
+        'vendor/analytics.html', 
+        total_customers=total_customers,
+        total_revenue=total_revenue,
+        avg_rating=round(float(avg_rating), 1),
+        service_labels=json.dumps(service_labels),
+        service_counts=json.dumps(service_counts),
+        trend_labels=json.dumps(trend_labels),
+        trend_counts=json.dumps(trend_counts)
+    )
 
 @vendor.route('/reviews')
 @login_required

@@ -18,7 +18,7 @@ class Appointment(db.Model):
     status = db.Column(db.String(50), default="pending")
     vendor = db.relationship('Vendor')
     service = db.relationship('Service')
-    
+    service_cost = db.Column(db.Integer)
     
     # ✅ NEW: Sentiment column
     sentiment = db.Column(db.String(20), nullable=True)  

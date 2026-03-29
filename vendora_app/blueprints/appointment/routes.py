@@ -68,6 +68,7 @@ def book_service(service_id):
             start_time=start_time,
             end_time=end_time,
             service_type = service.service_type,
+            service_cost=service.service_cost,
             status="pending"
         )
 

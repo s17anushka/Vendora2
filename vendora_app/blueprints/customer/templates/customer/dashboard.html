@@ -93,7 +93,7 @@
                         {% endif %}
 
                         <!-- REVIEW -->
-                        {% if appt.status == 'confirmed' and not appt.rating %}
+                        {% if appt.status == 'confirmed' or appt.status == 'completed' and not appt.rating %}
                         <button onclick="openReviewModal({{ appt.id }})"
                             class="w-full bg-gray-900 text-white py-2 rounded-lg text-sm hover:bg-black transition">
                             Give Review

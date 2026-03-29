@@ -4,7 +4,7 @@ from vendora_app.blueprints.customer.models import Customer
 from vendora_app.blueprints.appointment.models import Appointment
 from flask_login import login_user, logout_user, current_user, login_required
 from vendora_app.app import db, bcrypt
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 
 customer = Blueprint('customer', __name__, template_folder = 'templates')

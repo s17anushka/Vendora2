@@ -1,75 +1,36 @@
 {% extends "base.html" %}
 
-{% block title %}Analytics{% endblock %}
-
-{% block head_content %}
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{% endblock %}
-
 {% block content %}
 <div class="p-6 bg-gray-100 min-h-screen">
+    <h1 class="text-2xl font-bold text-black mb-6">Analytics Dashboard</h1>
 
-    <!-- Page Title -->
-    <h1 class="text-2xl font-bold text-black mb-6">
-        Analytics Dashboard
-    </h1>
-
-    <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white p-5 rounded-xl shadow">
-            <p class="text-gray-500 text-sm">Total Customers</p>
-            <h2 class="text-3xl font-bold text-black">1,240</h2>
-            <p class="text-green-600 text-sm mt-1">▲ 12% increase</p>
+            <p class="text-gray-500 text-sm">Total Unique Customers</p>
+            <h2 class="text-3xl font-bold text-black">{{ total_customers }}</h2>
         </div>
 
         <div class="bg-white p-5 rounded-xl shadow">
-            <p class="text-gray-500 text-sm">Page Views</p>
-            <h2 class="text-3xl font-bold text-black">8,540</h2>
+            <p class="text-gray-500 text-sm">Total Revenue</p>
+            <h2 class="text-3xl font-bold text-black">₹{{ "{:,}".format(total_revenue) }}</h2>
         </div>
 
         <div class="bg-white p-5 rounded-xl shadow">
-            <p class="text-gray-500 text-sm">Revenue</p>
-            <h2 class="text-3xl font-bold text-black">₹2,45,000</h2>
-            <p class="text-green-600 text-sm mt-1">▲ Increasing</p>
+            <p class="text-gray-500 text-sm">Avg Rating</p>
+            <h2 class="text-3xl font-bold text-black">{{ avg_rating }} ⭐</h2>
+            <p class="text-gray-400 text-xs mt-1">From {{ total_reviews }} reviews</p>
         </div>
     </div>
 
-    <!-- Charts -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-
-        <!-- Pie Chart -->
         <div class="bg-white p-5 rounded-xl shadow">
-            <h3 class="text-lg font-semibold text-black mb-4">
-                Most Used Services
-            </h3>
-            <div class="h-64">
-                <canvas id="servicePieChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Demand Graph -->
-        <div class="bg-white p-5 rounded-xl shadow">
-            <h3 class="text-lg font-semibold text-black mb-4">
-                Demand Trend
-            </h3>
-            <div class="h-64">
-                <canvas id="demandChart"></canvas>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Reviews & Ratings -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white p-5 rounded-xl shadow">
-            <p class="text-gray-500 text-sm">Total Reviews</p>
-            <h2 class="text-3xl font-bold text-black">320</h2>
+            <h3 class="text-lg font-semibold text-black mb-4">Most Used Services</h3>
+            <div class="h-64"><canvas id="servicePieChart"></canvas></div>
         </div>
 
         <div class="bg-white p-5 rounded-xl shadow">
-            <p class="text-gray-500 text-sm">Average Rating</p>
-            <h2 class="text-3xl font-bold text-black">4.5 ⭐</h2>
+            <h3 class="text-lg font-semibold text-black mb-4">Demand Trend (Monthly)</h3>
+            <div class="h-64"><canvas id="demandChart"></canvas></div>
         </div>
     </div>
 
@@ -78,34 +39,36 @@
 
 {% block scripts %}
 <script>
-    // Pie Chart
+    // Parse the data from Flask
+    const sLabels = {{ service_labels| safe }};
+    const sCounts = {{ service_counts| safe }};
+    const tLabels = {{ trend_labels| safe }};
+    const tCounts = {{ trend_counts| safe }};
+
+    // Service Pie Chart
     new Chart(document.getElementById('servicePieChart'), {
         type: 'pie',
         data: {
-            labels: ['Haircut', 'Spa', 'Massage', 'Facial'],
+            labels: sLabels,
             datasets: [{
-                data: [40, 25, 20, 15],
-                backgroundColor: [
-                    '#3b82f6',
-                    '#10b981',
-                    '#f59e0b',
-                    '#ef4444'
-                ]
+                data: sCounts,
+                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444']
             }]
         }
     });
 
-    // Line Chart
+    // Demand Line Chart
     new Chart(document.getElementById('demandChart'), {
         type: 'line',
         data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            labels: tLabels,
             datasets: [{
-                label: 'Demand',
-                data: [120, 180, 260, 240, 310, 390],
+                label: 'Bookings',
+                data: tCounts,
                 borderColor: '#3b82f6',
-                tension: 0.4,
-                fill: false
+                tension: 0.3,
+                fill: true,
+                backgroundColor: 'rgba(59, 130, 246, 0.1)'
             }]
         }
     });
