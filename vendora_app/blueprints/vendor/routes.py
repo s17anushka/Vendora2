@@ -4,7 +4,7 @@ from vendora_app.blueprints.customer.models import Customer
 from vendora_app.blueprints.appointment.models import Appointment
 from flask_login import login_user, logout_user, current_user, login_required
 from vendora_app.app import db
-from cloudinary.uploader import upload
+from cloudinary.uploader import upload,  destroy
 from sqlalchemy import func, desc
 from datetime import datetime, timedelta
 import json
@@ -93,6 +93,9 @@ def profile_setup():
     flash('Vendor Profile completed successfully!', 'Success')
     return redirect(url_for('vendor.dashboard'))
 
+
+
+
 @vendor.route('/profile_update', methods=['GET', 'POST'])
 @login_required
 def profile_update():
@@ -122,23 +125,47 @@ def profile_update():
     vendor_profile.whatsapp_number = request.form.get('whatsapp_number', vendor_profile.whatsapp_number)
     vendor_profile.open_duration = request.form.get('open_duration', vendor_profile.open_duration)
     vendor_profile.payment_type = request.form.get('payment_type', vendor_profile.payment_type)
-    vendor_profile.year_of_establishment = request.form.get('year_of_establishment', vendor_profile.year_of_establishment)
-     
-    # uploading business image
+    vendor_profile.year_of_establishment = request.form.get(
+        'year_of_establishment', vendor_profile.year_of_establishment
+    )
+
+    # ==========================
+    # Image Handling (Replace)
+    # ==========================
     files = request.files.getlist("image")
-    uploaded_urls = []
-    index_start = len(current_user.business_imgs)+1
-    print(current_user.uid)
-    for i, file in enumerate(files, start=index_start):
-        result = upload(
-            file,
-            folder=f"vendora/{current_user.uid}/business_img/",
-            public_id=f"img_{str(i)}",
-            overwrite=True
-        )
-        url = result["secure_url"]
-        current_user.business_imgs.append(url)
-        uploaded_urls.append(url)
+
+    # ✅ Only proceed if user uploaded new images
+    if files and files[0].filename != "":
+
+        # 🔴 Step 1: Delete old images from Cloudinary
+        for url in current_user.business_imgs:
+            try:
+                public_id = url.split("/")[-1].split(".")[0]
+                folder_path = f"vendora/{current_user.uid}/business_img/"
+                destroy(folder_path + public_id)
+            except Exception as e:
+                print("Error deleting image:", e)
+
+        # 🔴 Step 2: Clear DB list
+        current_user.business_imgs = []
+
+        # 🔴 Step 3: Upload new images
+        uploaded_urls = []
+        for i, file in enumerate(files, start=1):
+            result = upload(
+                file,
+                folder=f"vendora/{current_user.uid}/business_img/",
+                public_id=f"img_{str(i)}",
+                overwrite=True
+            )
+            uploaded_urls.append(result["secure_url"])
+
+        # 🔴 Step 4: Save new images
+        current_user.business_imgs = uploaded_urls
+
+    # ==========================
+    # Commit Changes
+    # ==========================
     db.session.commit()
 
     flash('Vendor Profile updated successfully!', 'success')
