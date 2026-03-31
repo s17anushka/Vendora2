@@ -160,21 +160,7 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-## Environment Variables
 
-Create a `.env` file (or set variables in your host environment) for:
-
-```env
-DB_PASSWORD=your_database_password
-c_cloud_name=your_cloudinary_cloud_name
-c_api_key=your_cloudinary_api_key
-c_api_secret=your_cloudinary_api_secret
-SECRET_KEY=replace_with_secure_random_secret
-```
-
-Notes:
-- Current app code reads `DB_PASSWORD` and Cloudinary keys directly.
-- `SECRET_KEY` is currently hardcoded in `vendora_app/app.py`; move it to env for production safety.
 
 ## Run
 
