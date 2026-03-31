@@ -1,468 +1,292 @@
-# 🏪 Vendora - Platform Documentation
+# Vendora - Detailed Project README
 
-> **Empowering local vendors in India to connect with customers through digital presence**
+Vendora is a full-stack service marketplace web app where customers can discover vendors, book appointments, leave reviews, and get AI-powered recommendations. Vendors can manage business profiles, services, appointments, analytics, and review insights.
 
----
-
-## 📑 Table of Contents
-
-- [🎯 Introduction](#-introduction)
-- [⚙️ Tech Stack](#️-tech-stack)
-- [📁 Architecture](#-architecture)
-- [🗄️ Database](#️-database)
-- [🎨 Design System](#-design-system)
-- [🔐 Authentication](#-authentication)
-- [💼 Business Logic](#-business-logic)
-- [✨ Features](#-features)
-- [☁️ Deployment](#️-deployment)
-- [🚀 Quick Start](#-quick-start)
+The project is built primarily with Flask + MySQL and integrates two ML services hosted separately:
+- Sentiment analysis API for classifying customer review text
+- Recommendation API for personalized vendor suggestions
 
 ---
 
-## 🎯 Introduction
+## 1) Project Structure
 
-**Vendora** is a web platform connecting local service providers (barbers, mechanics, plumbers, etc.) with customers in India. Vendors create professional pages where customers can discover and book appointments.
-
-### 👥 Target Users
-- **Vendors** 🛠️: Local service providers seeking digital presence
-- **Customers** 👤: People looking to book local services
-
----
-
-## ⚙️ Tech Stack
-
-### Backend
-- **Flask** 🐍 - Python web framework
-- **SQLAlchemy** 🗃️ - ORM for database
-- **Flask-Login** 🔑 - Session management
-- **Flask-Bcrypt** 🔒 - Password security
-
-### Database
-- **MySQL** 🐬 - Production database (Aiven Cloud)
-- **Alembic** 📊 - Database migrations
-
-### Frontend
-- **Tailwind CSS v3** 🎨 - Utility-first CSS
-- **Jinja2** 📝 - Template engine
-- **Inter Font** ✍️ - Typography
-
-### Cloud Services
-- **Vercel** 🚀 - Application hosting
-- **Cloudinary** ☁️ - Image storage & CDN
-- **Aiven** 🗄️ - Managed MySQL
-
----
-
-## 📁 Architecture
-
-### Project Structure
-
-```
+```text
 vendora2/
-├── run.py                    # 🚪 Entry point
-├── requirements.txt          # 📦 Dependencies
-├── vercel.json              # ⚙️ Deployment config
-└── vendora_app/
-    ├── app.py               # 🏭 App factory
-    ├── extensions.py        # 🔌 Extensions init
-    ├── templates/           # 🎨 Base templates
-    │   ├── base.html
-    │   ├── headers/
-    │   └── sidebar/
-    ├── migrations/          # 📊 DB migrations
-    └── blueprints/          # 🧩 Modular routes
-        ├── auth/           # 🔐 Authentication
-        ├── vendor/         # 🏪 Vendor features
-        ├── customer/       # 👤 Customer features
-        ├── appointment/    # 📅 Appointments
-        └── core/           # 🏠 Core routes
+|-- vendora_app/                     # Main Flask application
+|   |-- app.py                       # App factory, config, blueprint registration
+|   |-- extensions.py                # Flask extensions (SQLAlchemy, LoginManager, Bcrypt)
+|   |-- blueprints/
+|   |   |-- auth/                    # Signup/login/profile/delete account
+|   |   |-- customer/                # Customer dashboard, booking actions, recommendations
+|   |   |-- vendor/                  # Vendor profile, services, appointments, analytics
+|   |   |-- appointment/             # Booking flow and slot conflict handling
+|   |   `-- core/                    # Root routes and static pages
+|   `-- migrations/                  # Alembic/Flask-Migrate migration files
+|
+|-- Sentiment Analysis/              # FastAPI + DistilBERT sentiment microservice
+|-- Recommendation System/           # Recommender experimentation assets (notebook + data)
+|-- run.py                           # Flask app entry point
+|-- requirements.txt                 # Main Flask app dependencies
+`-- README2.md                       # This file
 ```
-
-### 🏗️ Architecture Benefits
-
-| Pattern                  | Benefit                              |
-| ------------------------ | ------------------------------------ |
-| **Blueprint Pattern**    | Modular, scalable, maintainable code |
-| **Factory Pattern**      | Testable, configurable app instances |
-| **Template Inheritance** | DRY principle, consistent UI         |
-| **Migrations**           | Version-controlled schema changes    |
 
 ---
 
-## 🗄️ Database
+## 2) Core Features
 
-### Schema Overview
+### Customer
+- Browse vendors and search by business name
+- View vendor details and service catalog
+- Book appointments with conflict checks (overlapping slots are blocked)
+- Update or cancel existing appointments
+- Rate completed appointments and submit text reviews
+- Get AI-powered vendor recommendations
 
-#### 👤 **users** Table
-Primary authentication table with role flags.
+### Vendor
+- Complete and update vendor business profile
+- Upload business images via Cloudinary
+- Create, edit, and delete offered services
+- Manage appointment lifecycle (`pending` -> `confirmed` -> `completed` / `cancelled`)
+- View dashboard and analytics (revenue, customers, service demand trends)
+- Track review sentiment breakdown (`positive`, `neutral`, `negative`)
 
-| Field           | Type         | Description                  |
-| --------------- | ------------ | ---------------------------- |
-| `uid`           | INT          | Primary key                  |
-| `username`      | VARCHAR(100) | Unique username              |
-| `password`      | VARCHAR(80)  | Bcrypt hashed                |
-| `is_customer`   | BOOLEAN      | Customer role flag           |
-| `is_vendor`     | BOOLEAN      | Vendor role flag             |
-| `last_role`     | VARCHAR(20)  | Last logged-in role          |
-| `name`          | VARCHAR(50)  | Display name                 |
-| `profile_img`   | VARCHAR(500) | Cloudinary URL               |
-| `business_imgs` | JSON         | Array of business image URLs |
+### Authentication and Accounts
+- Role-based signup/login (`customer`, `vendor`, or both)
+- Password hashing via Flask-Bcrypt
+- User profile updates (name + profile image)
+- Account deletion with cascade behavior for linked profiles
 
-#### 🏪 **vendor** Table
-Vendor business information.
-
-| Field              | Type         | Description         |
-| ------------------ | ------------ | ------------------- |
-| `id`               | INT          | Primary key         |
-| `user_id`          | INT          | Foreign key → users |
-| `business_name`    | VARCHAR(100) | Business name       |
-| `business_address` | VARCHAR(200) | Location            |
-| `phone_number`     | VARCHAR(20)  | Contact             |
-| `rating`           | FLOAT        | Average rating      |
-| `rater_no`         | INT          | Number of ratings   |
-
-#### 👥 **customer** Table
-Customer profile information.
-
-| Field       | Type         | Description         |
-| ----------- | ------------ | ------------------- |
-| `id`        | INT          | Primary key         |
-| `user_id`   | INT          | Foreign key → users |
-| `full_name` | VARCHAR(100) | Customer name       |
-| `address`   | VARCHAR(200) | Address             |
-| `phone`     | VARCHAR(20)  | Phone number        |
-
-### 🔗 Relationships
-
-```
-users (1) ──< (1) customer
-users (1) ──< (1) vendor
-users (1) ──< (*) note
-```
-
-**Key Features:**
-- ✅ Cascade deletes (user deletion removes profiles)
-- ✅ Dual role support (user can be both customer & vendor)
-- ✅ JSON storage for business images
+### AI Integration
+- **Sentiment API**: review text is classified before storing sentiment in appointments
+- **Recommendation API**: customer ID is sent to external recommender service and vendor IDs are mapped back to local DB records
 
 ---
 
-## 🎨 Design System
+## 3) Tech Stack
 
-### 🎨 Color Palette
+### Main App
+- Flask 3
+- Flask-SQLAlchemy
+- Flask-Migrate + Alembic
+- Flask-Login
+- Flask-Bcrypt
+- MySQL (via PyMySQL driver)
+- Jinja2 templates
+- Cloudinary (image hosting)
 
-| Color          | Hex       | Usage                 |
-| -------------- | --------- | --------------------- |
-| **Primary**    | `#1D4ED8` | Buttons, links, brand |
-| **Secondary**  | `#4B5563` | Text, borders         |
-| **Background** | `#F3F4F6` | Page backgrounds      |
-| **Surface**    | `#FFFFFF` | Cards, containers     |
-| **Footer**     | `#111827` | Footer background     |
-
-### ✍️ Typography
-- **Font**: Inter (Google Fonts)
-- **Weights**: 400, 500, 600, 700
-
-### 📱 Responsive Design
-- **Mobile-first** approach
-- Breakpoints: `sm:640px`, `md:768px`, `lg:1024px`, `xl:1280px`
-
-### 🎯 Design Principles
-- ✅ Minimal & clean
-- ✅ Flat design
-- ✅ Consistent patterns
-- ✅ Accessible UI
+### ML/AI Services
+- FastAPI (Sentiment service)
+- Hugging Face Transformers + PyTorch (DistilBERT inference)
+- External recommender endpoint (hosted service consumed by Flask app)
 
 ---
 
-## 🔐 Authentication
+## 4) Data Model Overview
 
-### 🔑 Key Features
+### `User`
+- Identity and auth fields (`username`, `password`)
+- Role flags (`is_customer`, `is_vendor`, `last_role`)
+- Profile media (`profile_img`, `business_imgs`)
+- One-to-one with `Customer` and `Vendor`
 
-#### **Role-Based Access Control**
-```python
-# Users can ONLY login with roles they're registered for
-if role == 'vendor' and not user.is_vendor:
-    flash('Not registered as vendor', 'danger')
-    return redirect('auth.signup')
-```
+### `Customer`
+- Personal profile data (`full_name`, `address`, `phone`, `age`, `gender`, `city`)
 
-#### **Password Security**
-- ✅ **Bcrypt hashing** with salt
-- ✅ **No plain text** storage
-- ✅ **One-way encryption**
+### `Vendor`
+- Business profile data (`business_name`, `business_address`, contacts, payments)
+- Aggregate rating fields (`rating`, `rater_no`)
+- One-to-many with `Service`
 
-#### **Session Management**
-- ✅ **Flask-Login** for secure sessions
-- ✅ **Role tracking** via `last_role`
-- ✅ **Profile verification** before dashboard access
+### `Service`
+- Service metadata (`service_name`, `service_type`, `duration_minutes`, `service_cost`)
 
-### 🔄 Authentication Flow
-
-```
-Signup → Select Role → Create Account
-  ↓
-Login → Verify Role → Check Profile
-  ↓
-Profile Setup (if needed) → Dashboard
-```
-
-### 🛡️ Security Features
-
-| Feature                   | Status |
-| ------------------------- | ------ |
-| Password Hashing (Bcrypt) | ✅      |
-| Session Management        | ✅      |
-| Role Verification         | ✅      |
-| Route Protection          | ✅      |
-| SQL Injection Prevention  | ✅      |
-| Environment Variables     | ✅      |
+### `Appointment`
+- Links customer/vendor/service
+- Time window (`start_time`, `end_time`)
+- Status (`pending`, `confirmed`, `cancelled`, `completed`)
+- Review metadata (`rating`, `review`, `sentiment`)
 
 ---
 
-## 💼 Business Logic
+## 5) Route Map (High-Level)
 
-### 📝 User Registration
+### Core
+- `/` -> redirects to vendor listing page
+- `/about`
+- `/developer`
 
-1. **New User**: Creates account with selected role
-2. **Existing User**: 
-   - Validates password
-   - Adds role if not assigned
-   - Shows message if role exists
+### Auth (`/auth`)
+- `/signup`, `/login`, `/logout`
+- `/profile_update`
+- `/delete_account`
 
-### 🔐 Login Process
+### Customer (`/customer`)
+- `/homepage` vendor listing/search
+- `/profile_setup`, `/dashboard`
+- `/vendor/<vendor_id>`
+- `/appointments`
+- `/update-appointment/<id>`, `/cancel-appointment/<id>`
+- `/rate/<appointment_id>`
+- `/recommendation`
 
-1. **Username & Password** validation
-2. **Role Verification** ⚠️ (Critical: Must be registered for role)
-3. **Profile Check**:
-   - No profile → Redirect to setup
-   - Profile exists → Dashboard
+### Vendor (`/vendor`)
+- `/profile_setup`, `/profile_update`
+- `/services`, `/add-service`, `/edit-service/<id>`, `/delete-service/<id>`
+- `/dashboard`, `/appointments`
+- `/confirm-appointment/<id>`, `/cancel-appointment/<id>`, `/complete_appointment/<id>`
+- `/analytics`, `/reviews`, `/support`
 
-### 🏪 Vendor Profile Setup
-
-**Required Fields:**
-- Business name, address
-- Contact numbers (phone, WhatsApp)
-- Business hours, payment methods
-- Year of establishment
-- **Business images** (multiple, Cloudinary)
-
-**Process:**
-- Images uploaded to `vendora/{user_id}/business_img/`
-- URLs stored in `business_imgs` JSON array
-- Initial rating set to 0.0
-
-### 👤 Customer Profile Setup
-
-**Required Fields:**
-- Full name
-- Address
-- Phone number
-
-### 🔍 Vendor Discovery
-
-- **Browse all vendors** on homepage
-- **Search** by business name (case-insensitive)
-- **View details** with images, ratings, contact info
-
-### 🖼️ Image Management
-
-| Type     | Storage    | Path Pattern                             |
-| -------- | ---------- | ---------------------------------------- |
-| Profile  | Cloudinary | `vendora/{uid}/profile_img`              |
-| Business | Cloudinary | `vendora/{uid}/business_img/img_{index}` |
-
-**Features:**
-- ✅ Multiple business images
-- ✅ Overwrite profile image
-- ✅ Append business images
-- ✅ CDN delivery
+### Appointment (`/appointment`)
+- `/book/<service_id>`
 
 ---
 
-## ✨ Features
+## 6) Setup - Main Flask App
 
-### ✅ Implemented Features
+## Prerequisites
+- Python 3.10+ recommended
+- MySQL-compatible database
+- Cloudinary account
 
-#### 🔐 Authentication
-- [x] User signup with role selection
-- [x] Login with role verification
-- [x] Logout & session management
-- [x] Profile update (name, image)
-- [x] Account deletion
-
-#### 🏪 Vendor Features
-- [x] Dashboard
-- [x] Profile setup & update
-- [x] Business image uploads
-- [x] Profile management
-
-#### 👤 Customer Features
-- [x] Dashboard
-- [x] Profile setup
-- [x] Vendor discovery
-- [x] Search functionality
-- [x] Vendor detail view
-
-#### 🎨 UI Features
-- [x] Responsive design
-- [x] Flash messages
-- [x] Role-based navigation
-- [x] Image galleries
-
-### 🚧 UI Ready (Backend Extendable)
-
-- [ ] Appointment booking system
-- [ ] Analytics dashboard
-- [ ] Reviews & ratings
-- [ ] Support system
-
----
-
-## ☁️ Deployment
-
-### 🚀 Vercel Configuration
-
-```json
-{
-  "version": 2,
-  "builds": [{"src": "run.py", "use": "@vercel/python"}],
-  "routes": [{"src": "/(.*)", "dest": "run.py"}]
-}
-```
-
-### 🗄️ Database: Aiven Cloud
-
-- **Host**: `mysql-3b0838a6-priyamjainsocial-b642.i.aivencloud.com`
-- **Port**: `27509`
-- **Type**: Managed MySQL
-- **Connection**: Environment variable `DB_PASSWORD`
-
-### ☁️ Cloudinary
-
-- **Purpose**: Image storage & CDN
-- **Config**: Environment variables (`c_cloud_name`, `c_api_key`, `c_api_secret`)
-
-### 🔐 Environment Variables
-
-```env
-DB_PASSWORD=your_password
-c_cloud_name=your_cloud_name
-c_api_key=your_api_key
-c_api_secret=your_api_secret
-SECRET_KEY=your_secret_key
-```
-
-### 📋 Deployment Checklist
-
-- [ ] Set environment variables
-- [ ] Run database migrations
-- [ ] Test database connection
-- [ ] Verify Cloudinary credentials
-- [ ] Deploy to Vercel
-
----
-
-## 🚀 Quick Start
-
-### 🛠️ Development Setup
+## Install
 
 ```bash
-# 1. Clone repository
-git clone <repo-url>
-cd vendora2
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# Linux/macOS
+# source .venv/bin/activate
 
-# 2. Create virtual environment
-python -m venv vendenv
-vendenv\Scripts\activate  # Windows
-# source vendenv/bin/activate  # Linux/Mac
-
-# 3. Install dependencies
 pip install -r requirements.txt
+```
 
-# 4. Set environment variables
-# Create .env file with required variables
+## Environment Variables
 
-# 5. Run migrations
-flask db upgrade
+Create a `.env` file (or set variables in your host environment) for:
 
-# 6. Run application
+```env
+DB_PASSWORD=your_database_password
+c_cloud_name=your_cloudinary_cloud_name
+c_api_key=your_cloudinary_api_key
+c_api_secret=your_cloudinary_api_secret
+SECRET_KEY=replace_with_secure_random_secret
+```
+
+Notes:
+- Current app code reads `DB_PASSWORD` and Cloudinary keys directly.
+- `SECRET_KEY` is currently hardcoded in `vendora_app/app.py`; move it to env for production safety.
+
+## Run
+
+```bash
 python run.py
 ```
 
-### 🌐 Access Routes
+Default dev URL: `http://127.0.0.1:5000`
 
-| Route                | URL                   | Description       |
-| -------------------- | --------------------- | ----------------- |
-| 🏠 Home               | `/`                   | Vendor discovery  |
-| 🔐 Login              | `/auth/login`         | User login        |
-| 📝 Signup             | `/auth/signup`        | User registration |
-| 🏪 Vendor Dashboard   | `/vendor/dashboard`   | Vendor portal     |
-| 👤 Customer Dashboard | `/customer/dashboard` | Customer portal   |
-| 🔍 Browse Vendors     | `/customer/homepage`  | Vendor list       |
+---
 
-### 📍 Key File Locations
-
-| Component       | Location                                     |
-| --------------- | -------------------------------------------- |
-| **Models**      | `vendora_app/blueprints/{module}/models.py`  |
-| **Routes**      | `vendora_app/blueprints/{module}/routes.py`  |
-| **Templates**   | `vendora_app/blueprints/{module}/templates/` |
-| **App Config**  | `vendora_app/app.py`                         |
-| **Entry Point** | `run.py`                                     |
-
-### 🔄 Common Commands
+## 7) Database Migrations
 
 ```bash
-# Create migration
-flask db migrate -m "description"
-
-# Apply migration
+flask db init
+flask db migrate -m "initial schema"
 flask db upgrade
+```
 
-# Rollback migration
-flask db downgrade
+If your `FLASK_APP` is not set:
+
+```bash
+set FLASK_APP=run.py   # Windows (cmd)
+# $env:FLASK_APP="run.py"   # PowerShell
 ```
 
 ---
 
-## 📊 System Flow
+## 8) Sentiment Service (Standalone)
 
+The `Sentiment Analysis/` folder is an independent FastAPI service.
+
+## Run Locally
+
+```bash
+cd "Sentiment Analysis"
+pip install -r requirements.txt
+uvicorn app.main:app --host 0.0.0.0 --port 7860 --reload
 ```
-User → Login → Role Check → Profile Check → Dashboard
-  ↓
-Customer: Browse Vendors → View Details → Book (Future)
-  ↓
-Vendor: Manage Profile → View Appointments → Analytics
-```
+
+## API Endpoints
+- `GET /health`
+- `POST /predict`
+- `POST /predict/batch`
+- `GET /docs`
+
+Current Flask integration calls a hosted endpoint:
+- `https://priyam1105-sentiment-analysis-pro.hf.space/predict`
 
 ---
 
-## 🎯 Key Highlights
+## 9) Recommendation Service Integration
 
-- ✅ **Modular Architecture** - Blueprint pattern for scalability
-- ✅ **Secure Authentication** - Role-based access with strict verification
-- ✅ **Cloud Infrastructure** - Vercel + Aiven + Cloudinary
-- ✅ **Modern UI** - Tailwind CSS with responsive design
-- ✅ **Image Management** - Cloudinary integration
-- ✅ **Database Migrations** - Version-controlled schema
+The customer recommendation view calls:
+- `https://priyam1105-vendor-recsys.hf.space/recommend`
 
----
+Expected behavior:
+1. Send `{ "customer_id": <int>, "top_n": 6 }`
+2. Receive recommended vendor IDs
+3. Query local `Vendor` records and render in ranked order
 
-## 📞 Support
-
-For questions or contributions, visit the developer page at `/developer` or contact the development team.
-
----
-
-**📝 Documentation Version**: 1.0  
-**📅 Last Updated**: 2025  
-**👨‍💻 Maintained By**: Vendora Development Team
+Local recommender experimentation files currently exist in:
+- `Recommendation System/Copy_of_Untitled3.ipynb`
+- `Recommendation System/synthetic_data_2026-03-26.csv`
 
 ---
 
-<div align="center">
+## 10) Typical User Flow
 
-**Made with ❤️ for local vendors in India**
+1. User signs up and chooses role
+2. User logs in and completes role profile
+3. Customer browses vendors and books service
+4. Vendor confirms and completes appointment
+5. Customer submits rating + review
+6. Review text is analyzed for sentiment and stored
+7. Vendor sees sentiment mix in reviews dashboard
+8. Customer requests personalized recommendations
 
-</div>
+---
+
+## 11) Security and Production Notes
+
+- Move hardcoded `SECRET_KEY` to environment variable
+- Avoid committing `.env` files and credentials
+- Add CSRF protection for form POST routes
+- Add stricter ownership checks in some vendor service mutation routes
+- Configure request retries/fallback for external ML API calls
+- Consider rate limiting for auth and inference-triggering endpoints
+
+---
+
+## 12) Known Improvement Areas
+
+- Add automated tests (unit + integration)
+- Add service-level API contracts for recommender
+- Add caching for recommendation/sentiment calls
+- Containerize Flask app for environment consistency
+- Add centralized logging and error monitoring
+
+---
+
+## 13) Quick Troubleshooting
+
+- `ModuleNotFoundError`: confirm venv is activated and dependencies installed
+- DB connection failures: verify `DB_PASSWORD` and DB host availability
+- Image upload issues: verify Cloudinary credentials and network access
+- Recommendation page empty: verify recommender endpoint response and local vendor IDs
+- Sentiment fallback to neutral: API timeout/downstream errors default gracefully
+
+---
+
+## 14) License
+
+No explicit project license file is currently present. Add a `LICENSE` file if distribution or open-source publication is planned.
+
